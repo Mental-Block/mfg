@@ -10,11 +10,11 @@ import { menu as navMenu } from './navMenu';
 import { menu as jobMenu } from './jobSchedulerMenu';
 
 import { Home } from './Pages/MFG/Home';
-import { JobCreation } from './Pages/JobCreation/Home';
+import { JobCreation } from './Pages/JobScheduler/Home';
 import { NotFound } from './Pages/Common/NotFound';
-import { NotifyProduction } from './Pages/JobCreation/NotifyProduction';
-import { JobAdd, JobEdit, JobRemove, JobTransfer } from './Pages/JobCreation/Job';
-import { CommonParts, Feeders } from './Pages/JobCreation/Optimizer-Analyzer';
+import { NotifyProduction } from './Pages/JobScheduler/NotifyProduction';
+import { JobAdd, JobEdit, JobRemove, JobTransfer } from './Pages/JobScheduler/Job';
+import { CommonParts, Feeders } from './Pages/JobScheduler/Optimizer-Analyzer';
 
 type Theme = 'default' | 'dark';
 
