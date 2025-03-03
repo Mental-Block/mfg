@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "allowJs": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "@assets/*": ["assets/*"],
+      "@Layout/*": ["src/Layout/*"],
+      "@CSS/*": ["src/CSS/*"]
+    }
+  },
+  "include": ["src/**/*", "webpack.config.js"]
+}
