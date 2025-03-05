@@ -1,0 +1,13 @@
+
+CREATE TABLE IF NOT EXISTS public.line_job
+(
+    job_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    line_id INT NOT NULL
+);
+
+ALTER TABLE IF EXISTS public.line_job
+    ADD FOREIGN KEY (job_id)
+    REFERENCES public.job (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
