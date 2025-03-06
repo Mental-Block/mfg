@@ -1,10 +1,11 @@
+
 CREATE TABLE IF NOT EXISTS public.board
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    name text NOT NULL,
-    createdDT timestamp without time zone NOT NULL,
-    updatedDT timestamp without time zone,
-    updatedBy text,
-    createdBy text NOT NULL,
+    name TEXT NOT NULL,
+    updated_by TEXT, 
+    updated_dt TIMESTAMPTZ,
+    created_by TEXT NOT NULL DEFAULT SESSION_USER,
+    created_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 );

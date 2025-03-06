@@ -1,11 +1,10 @@
-
 CREATE TABLE IF NOT EXISTS public.job
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    name text,
-    createdDT timestamp with time zone NOT NULL,
-    updatedDT timestamp with time zone NOT NULL,
-    updatedBy text,
-    createdBy text,
+    name TEXT NOT NULL,
+    updated_by TEXT,
+    updated_dt TIMESTAMPTZ, 
+    created_by TEXT NOT NULL DEFAULT SESSION_USER,
+    created_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 );

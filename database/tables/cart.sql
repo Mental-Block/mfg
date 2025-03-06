@@ -2,19 +2,12 @@ CREATE TABLE IF NOT EXISTS public.cart
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     machine_id INT,
-    name text,
-    slots integer,
-    direction bit,
-    updatedDT timestamp with time zone,
-    createdDT timestamp with time zone NOT NULL,
-    createdBy text NOT NULL,
-    updatedBy text,
+    name TEXT NOT NULL,
+    slots INT NOT NULL,
+    direction BIT NOT NULL,
+    updated_by TEXT,
+    updated_dt TIMESTAMPTZ,
+    created_by TEXT NOT NULL DEFAULT SESSION_USER, 
+    created_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 );
-
-ALTER TABLE IF EXISTS public.cart
-    ADD FOREIGN KEY (machine_id)
-    REFERENCES public.machine (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;

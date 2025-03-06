@@ -1,0 +1,20 @@
+#!/bin/bash
+port=5432
+server=172.18.0.2
+database=mfg
+user=root
+password=root
+
+## Generate tables
+for filename in ./*.sql; do
+    [ -e "$filename" ] || continue
+    sudo PGPASSWORD=$password psql -h $server -p $port -d $database -U $user < $filename
+done
+
+## Add Forieng keys and indexes
+for filename in ./FK/*.sql; do
+    [ -e "$filename" ] || continue
+    sudo PGPASSWORD=$password psql -h $server -p $port -d $database -U $user < $filename
+done
+
+echo "finished"

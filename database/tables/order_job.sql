@@ -1,12 +1,5 @@
 CREATE TABLE IF NOT EXISTS public.order_job
 (
-    order_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    job_id INT NOT NULL GENERATED ALWAYS AS IDENTITY
+    order_id INT NOT NULL,
+    job_id INT NOT NULL
 );
-
-ALTER TABLE IF EXISTS public.order_job
-    ADD FOREIGN KEY (order_id)
-    REFERENCES public.order (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;

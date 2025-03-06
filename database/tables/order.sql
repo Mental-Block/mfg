@@ -1,14 +1,13 @@
 CREATE TABLE IF NOT EXISTS public.order
 (
-    id uuid NOT NULL GENERATED ALWAYS AS IDENTITY,
-    board_id uuid NOT NULL,
-    name text NOT NULL,
-    dueDate date,
-    quantity integer NOT NULL,
-    createdDT timestamp with time zone NOT NULL,
-    updatedDT timestamp with time zone,
-    createdBy text NOT NULL,
-    updatedBy text,
+    id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    board_id INT NOT NULL,
+    name TEXT NOT NULL,
+    due_date DATE,
+    quantity INT NOT NULL,
+    updated_by TEXT,
+    updated_dt TIMESTAMPTZ,
+    created_by TEXT NOT NULL DEFAULT SESSION_USER,
+    created_dt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 );
-
