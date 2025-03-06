@@ -10,3 +10,5 @@ for filename in ./*.sql; do
     [ -e "$filename" ] || continue
     sudo PGPASSWORD=$password psql -h $server -p $port -d $database -U $user < $filename
 done
+
+echo "finished"
