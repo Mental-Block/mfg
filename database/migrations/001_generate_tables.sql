@@ -1,5 +1,5 @@
 -- Write your migrate up statements here
-CREATE TABLE IF NOT EXISTS public.user
+CREATE TABLE IF NOT EXISTS {{.schema}}.user
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     username TEXT NOT NULL CHECK (LENGTH(username) <= 100),
@@ -12,10 +12,10 @@ CREATE TABLE IF NOT EXISTS public.user
     PRIMARY KEY (id)
 );
 
-COMMENT ON TABLE public.user
+COMMENT ON TABLE {{.schema}}.user
     IS 'demoralizing user is added or updated on any table';
 
-CREATE TABLE IF NOT EXISTS public.package
+CREATE TABLE IF NOT EXISTS {{.schema}}.package
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.package
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.order
+CREATE TABLE IF NOT EXISTS {{.schema}}.order
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     board_id INT NOT NULL,
@@ -40,13 +40,13 @@ CREATE TABLE IF NOT EXISTS public.order
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.order_job
+CREATE TABLE IF NOT EXISTS {{.schema}}.order_job
 (
     order_id INT NOT NULL,
     job_id INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS public.machine
+CREATE TABLE IF NOT EXISTS {{.schema}}.machine
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     line_id INT,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.machine
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.line
+CREATE TABLE IF NOT EXISTS {{.schema}}.line
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -69,13 +69,13 @@ CREATE TABLE IF NOT EXISTS public.line
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.line_job
+CREATE TABLE IF NOT EXISTS {{.schema}}.line_job
 (
     job_id INT NOT NULL,
     line_id INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS public.job
+CREATE TABLE IF NOT EXISTS {{.schema}}.job
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS public.job
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.feeder
+CREATE TABLE IF NOT EXISTS {{.schema}}.feeder
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     cart_id INT,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS public.feeder
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.cart
+CREATE TABLE IF NOT EXISTS {{.schema}}.cart
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     machine_id INT,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS public.cart
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS public.board
+CREATE TABLE IF NOT EXISTS {{.schema}}.board
 (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -125,91 +125,91 @@ CREATE TABLE IF NOT EXISTS public.board
     PRIMARY KEY (id)
 );
 
-ALTER TABLE IF EXISTS public.cart
+ALTER TABLE IF EXISTS {{.schema}}.cart
     ADD CONSTRAINT fk_cart_machine
     FOREIGN KEY (machine_id)
-    REFERENCES public.machine (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.machine (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.order
+ALTER TABLE IF EXISTS {{.schema}}.order
     ADD CONSTRAINT fk_order_board
     FOREIGN KEY (board_id)
-    REFERENCES public.board (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.board (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.order_job
+ALTER TABLE IF EXISTS {{.schema}}.order_job
     ADD CONSTRAINT fk_order_job_order
     FOREIGN KEY (order_id)
-    REFERENCES public.order (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.order (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.order_job
+ALTER TABLE IF EXISTS {{.schema}}.order_job
     ADD CONSTRAINT fk_order_job_job
     FOREIGN KEY (job_id)
-    REFERENCES public.job (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.job (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.machine
+ALTER TABLE IF EXISTS {{.schema}}.machine
     ADD CONSTRAINT fk_machine_line
     FOREIGN KEY (line_id)
-    REFERENCES public.line (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.line (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.line_job
+ALTER TABLE IF EXISTS {{.schema}}.line_job
     ADD CONSTRAINT fk_line_job_job
     FOREIGN KEY (job_id)
-    REFERENCES public.job (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.job (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.line_job
+ALTER TABLE IF EXISTS {{.schema}}.line_job
     ADD CONSTRAINT fk_line_job_line
     FOREIGN KEY (line_id)
-    REFERENCES public.line (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.line (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.feeder
+ALTER TABLE IF EXISTS {{.schema}}.feeder
     ADD CONSTRAINT fk_feeder_cart
     FOREIGN KEY (cart_id)
-    REFERENCES public.cart (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.cart (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.feeder
+ALTER TABLE IF EXISTS {{.schema}}.feeder
     ADD CONSTRAINT fk_feeder_package 
     FOREIGN KEY (package_id)
-    REFERENCES public.package (id) MATCH SIMPLE
+    REFERENCES {{.schema}}.package (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 ---- create above / drop below ----
 
-DROP TABLE public.board;
-DROP TABLE public.cart;
-DROP TABLE public.feeder;
-DROP TABLE public.job;
-DROP TABLE public.line_job;
-DROP TABLE public.line;
-DROP TABLE public.machine;
-DROP TABLE public.order_job;
-DROP TABLE public.order;
-DROP TABLE public.packge;
-
+DROP TABLE {{.schema}}.line_job; 
+DROP TABLE {{.schema}}.order_job;
+DROP TABLE {{.schema}}.order;
+DROP TABLE {{.schema}}.board;
+DROP TABLE {{.schema}}.feeder;
+DROP TABLE {{.schema}}.cart;
+DROP TABLE {{.schema}}.machine;
+DROP TABLE {{.schema}}.line;
+DROP TABLE {{.schema}}.job;
+DROP TABLE {{.schema}}.package;
+DROP TABLE {{.schema}}.user;
 
 -- Write your migrate down statements here. If this migration is irreversible
 -- Then delete the separator line above.

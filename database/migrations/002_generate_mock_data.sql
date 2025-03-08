@@ -1,6 +1,6 @@
 -- Write your migrate up statements here
 
-INSERT INTO public.board 
+INSERT INTO {{.schema}}.board 
 (
     id
     ,name
@@ -32,7 +32,7 @@ VALUES
 (19, 'Board 19', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 'Board 20', NULL, NULL, 'admin', '2025-03-05 10:35:0020');
 
-INSERT INTO public.job 
+INSERT INTO {{.schema}}.job 
 (
     id
     ,name
@@ -64,7 +64,7 @@ VALUES
 (19, 'Job 19', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 'Job 20', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
-INSERT INTO public.line 
+INSERT INTO {{.schema}}.line 
 (
     id
     ,name
@@ -82,7 +82,7 @@ VALUES
 (5, 'Line 5', NULL, NULL, 'admin', '2025-03-05 09:20:00'),
 (6, 'Line 6', NULL, NULL, 'admin', '2025-03-05 09:25:00');
 
-INSERT INTO public.package 
+INSERT INTO {{.schema}}.package 
 (
     id
     ,name
@@ -114,7 +114,7 @@ VALUES
 (19, 'Package S', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 'Package T', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
-INSERT INTO public.user
+INSERT INTO {{.schema}}.user
 (
     id
     ,username
@@ -148,7 +148,7 @@ VALUES
 (19, 'user19', 'password', 'user19@example.com', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 'user20', 'password', 'user20@example.com', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
-INSERT INTO public.line_job 
+INSERT INTO {{.schema}}.line_job 
 (
     job_id
     ,line_id
@@ -160,7 +160,7 @@ VALUES
 (4, 3),
 (5, 4);
 
-INSERT INTO public.order 
+INSERT INTO {{.schema}}.order 
 (
     id
     ,board_id
@@ -185,7 +185,7 @@ VALUES
 (9, 4, 'Task 9', '2025-04-02', 5, NULL, NULL, 'admin', '2025-03-05 09:40:00'),
 (10, 2, 'Task 10', '2025-04-05', 3, NULL, NULL, 'admin', '2025-03-05 09:45:00');
 
-INSERT INTO public.machine 
+INSERT INTO {{.schema}}.machine 
 (
     id
     ,line_id
@@ -218,7 +218,7 @@ VALUES
 (19, 1, 'Machine 19', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 2, 'Machine 20', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
-INSERT INTO public.order_job 
+INSERT INTO {{.schema}}.order_job 
 (
     order_id
     ,job_id
@@ -230,7 +230,7 @@ VALUES
 (4, 3),
 (5, 4);
 
-INSERT INTO public.cart 
+INSERT INTO {{.schema}}.cart 
 (
     id
     ,machine_id
@@ -265,7 +265,7 @@ VALUES
 (19, 10, 'Cart 19', 60, '1', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 10, 'Cart 20', 60, '0', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
-INSERT INTO public.feeder 
+INSERT INTO {{.schema}}.feeder 
 (
     id
     ,cart_id
@@ -302,16 +302,18 @@ VALUES
 
 ---- create above / drop below ----
 
-TRUNCATE TABLE public.board;
-TRUNCATE TABLE public.cart;
-TRUNCATE TABLE public.feeder;
-TRUNCATE TABLE public.job;
-TRUNCATE TABLE public.line_job;
-TRUNCATE TABLE public.line;
-TRUNCATE TABLE public.machine;
-TRUNCATE TABLE public.order_job;
-TRUNCATE TABLE public.order;
-TRUNCATE TABLE public.packge;
+TRUNCATE TABLE {{.schema}}.order CASCADE;
+TRUNCATE TABLE {{.schema}}.board CASCADE;
+TRUNCATE TABLE {{.schema}}.line CASCADE;
+TRUNCATE TABLE {{.schema}}.job CASCADE;
+TRUNCATE TABLE {{.schema}}.feeder CASCADE;
+TRUNCATE TABLE {{.schema}}.cart CASCADE;
+TRUNCATE TABLE {{.schema}}.machine CASCADE;
+TRUNCATE TABLE {{.schema}}.package CASCADE;
+TRUNCATE TABLE {{.schema}}.user;
+TRUNCATE TABLE {{.schema}}.line_job; 
+TRUNCATE TABLE {{.schema}}.order_job;
+
 
 -- Write your migrate down statements here. If this migration is irreversible
 -- Then delete the separator line above.
