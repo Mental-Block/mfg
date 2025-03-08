@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
 
-import { MenuProps } from 'antd';
 import { ItemType, MenuItemType } from 'antd/es/menu/interface';
 
 import {
