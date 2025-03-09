@@ -15,23 +15,23 @@ services:
       timeout: 5s
       retries: 10
       start_period: 40s
-  # db_migration:
-  #   image: ghcr.io/jackc/tern:v2.3.2
-  #   restart: no
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./database/migrations/:/db/
-  #   entrypoint:
-  #     [
-  #       "/tern",
-  #       "migrate",
-  #       "--migrations",
-  #       "/db/",
-  #       "--conn-string",
-  #       "postgres://root:root@localhost:5432/mfg?sslmode=disable",
-  #     ]
+  db_setup:
+    image: ghcr.io/jackc/tern:v2.3.2
+    restart: no
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./database/migrations/:/db/
+    entrypoint:
+      [
+        "/tern",
+        "migrate",
+        "--migrations",
+        "/db/",
+        "--conn-string",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PWD}@${POSTGRES_HOST}:${POSTGRES_PORT_EXTERNAL}/${POSTGRES_DB}?sslmode=disable",
+      ]
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4

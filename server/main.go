@@ -5,7 +5,25 @@ import (
 	"os"
     "net/http"
     "github.com/gin-gonic/gin"
+
+    "github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humachi"
+	"github.com/danielgtaylor/huma/v2/humacli"
+
+    _ "github.com/danielgtaylor/huma/v2/formats/cbor"
 )
+
+
+// GreetingOutput represents the greeting operation response.
+type GreetingOutput struct {
+	Body struct {
+		Message string `json:"message" example:"Hello, world!" doc:"Greeting message"`
+	}
+}
+
+type Options struct {
+	Port int `help:"Port to listen on" short:"p" default:"8888"`
+}
 
 type album struct {
     ID     string  `json:"id"`
@@ -21,22 +39,51 @@ var albums = []album{
 }
 
 func main() {
-	cfg, err := LoadConfig()
+	cli := humacli.New(func(hooks humacli.Hooks, options *Options) {
 
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "config failed: %v\n", err)
-	}
+        cfg, err := LoadConfig()
 
-	dbCon()
+        if err != nil {
+            fmt.Fprintf(os.Stderr, "config failed: %v\n", err)
+        }
 
-    router := gin.Default()
-    router.GET("/albums", getAlbums)
-    router.GET("/albums/:id", getAlbumByID)
-    router.POST("/albums", postAlbums)
+		
+        router := gin.Default()
+		
+        api := humachi.New(router, huma.DefaultConfig("My API", "1.0.0"))
 
-	url := cfg.Web.Host + ":" + cfg.Web.Port;
+        
+		// Add the operation handler to the API.
+		huma.Get(api, "/greeting/{name}", func(ctx context.Context, input *struct{
+			Name string `path:"name" maxLength:"30" example:"world" doc:"Name to greet"`
+		}) (*GreetingOutput, error) {
+			resp := &GreetingOutput{}
+			resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Name)
+			return resp, nil
+		})
 
-    router.Run(url)
+        // Run the CLI. When passed no commands, it starts the server.
+            cli.Run()
+
+        
+            // router.GET("/albums", getAlbums)
+            // router.GET("/albums/:id", getAlbumByID)
+            // router.POST("/albums", postAlbums)
+
+            // url := cfg.Web.Host + ":" + cfg.Web.Port;
+
+            // router.Run(url)
+
+
+            // Options for the CLI. Pass `--port` or set the `SERVICE_PORT` env var.
+
+		// Tell the CLI how to start your router.
+		hooks.OnStart(func() {
+			http.ListenAndServe(fmt.Sprintf(":%d", options.Port), router)
+		})
+	})
+
+	cli.Run()
 }
 
 func getAlbums(c *gin.Context) {
