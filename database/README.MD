@@ -11,9 +11,9 @@ It is recommend to use `docker-compose.yml` file for the database. but if you ju
 ```
 docker run \
   -e POSTGRES_HOST_AUTH_METHOD=trust \
-  -e POSTGRES_USER=root \
-  -e POSTGRES_PASSWORD=root \
-  -e POSTGRES_DB=mfg \
+  -e POSTGRES_USER=USER \
+  -e POSTGRES_PASSWORD=PASSWORD \
+  -e POSTGRES_DB=DATABASE_NAME \
   -p 5432:5432 \
   postgres:17.4-bullseye
 ```
@@ -26,7 +26,7 @@ Run:
 tern migrate \
     --destination 1 \
     --migrations "./migrations/" \
-    --conn-string "postgres://root:root@localhost:5432/mfg?sslmode=disable"
+    --conn-string "postgres://USER:PASSWORD@localhost:5432/DATABASE_NAME?sslmode=disable"
 ```
 
 Create:
@@ -34,8 +34,3 @@ Create:
 ```
 tern new -m /migrations/ <migration name>
 ```
-
-## TODO
-
-- Move the creds to docker secrets. fine for now as its local database.
-- Storing DB users password in plain text. use a hashing algorithms

@@ -1,14 +1,9 @@
 package main
 
 import (
-    "net/http"
-	"database/sql"
 	"fmt"
-	"context"
-	"flag"
-	"log"
-	"time"
-
+	"os"
+    "net/http"
     "github.com/gin-gonic/gin"
 )
 
@@ -25,23 +20,23 @@ var albums = []album{
     {ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
 }
 
-// type app struct {
-// 	UserService services.UserService
-// }
-
 func main() {
-	
-	//application := app{UserService: services.NewPostgresUserService(db)}
+	cfg, err := LoadConfig()
 
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "config failed: %v\n", err)
+	}
+
+	dbCon()
 
     router := gin.Default()
     router.GET("/albums", getAlbums)
     router.GET("/albums/:id", getAlbumByID)
     router.POST("/albums", postAlbums)
 
+	url := cfg.Web.Host + ":" + cfg.Web.Port;
 
-
-    router.Run("localhost:8084")
+    router.Run(url)
 }
 
 func getAlbums(c *gin.Context) {
