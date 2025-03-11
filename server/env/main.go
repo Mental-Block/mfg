@@ -1,8 +1,9 @@
-package main
+package env
 
 import (
+	"log"
 	"os"
-	"fmt"
+
 	"github.com/joho/godotenv"
 )
 
@@ -25,11 +26,12 @@ type PostgresConfig struct {
 	MFG		 string
 }
 
-func LoadConfig() (*Config, error) {
-	err := godotenv.Load("../.env")
+
+func Env() (*Config) {
+	err := godotenv.Load("../../../.env")
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to load .env: %v\n", err)
+		log.Fatal("config failed: couldn't load .env")
 	}
 
 	cfg := &Config{
@@ -47,5 +49,5 @@ func LoadConfig() (*Config, error) {
 		},
 	}
 
-	return cfg, nil
+	return cfg
 }

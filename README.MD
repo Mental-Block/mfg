@@ -20,6 +20,10 @@ A group of utilities that are common to the manufacturing industry.
 - Login to PGAdmin using the enviroment variables. PGADMIN_DEFAULT_EMAIL and PGADMIN_DEFAULT_PASSWORD
 - Add hostname/address which is the ip adress from the postgres container in my case the ip was <strong>172.18.0.3</strong> and add other creds from enviroment variables such as POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB.
 
+## Setup REST API
+
+http://localhost:8888/docs
+
 ## Architecture
 
 ![high level overview](architecture.png)
