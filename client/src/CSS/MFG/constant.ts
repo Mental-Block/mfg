@@ -9,7 +9,7 @@ const blackRed = '#170b0b';
 export const defualtTheme: ThemeConfig = {
   components: {
     Layout: {
-      footerPadding: '32px 16px 32px 16px',
+      footerPadding: '2rem 1rem',
       footerBg: blackRed,
       triggerBg: blackRed,
       headerBg: blackRed,

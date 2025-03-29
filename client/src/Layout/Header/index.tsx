@@ -56,6 +56,7 @@ export const Header: React.FC<HeaderComponet> = ({ menuItems, selectedMenuItems 
         >
           <NavLink to="/">
             <img
+              
               style={{ display: 'block', minHeight: '22px', height: '226x', width: '84px', minWidth: '84px' }}
               src={logo}
               alt="logo"

@@ -1,4 +1,4 @@
-import { Divider, Flex, Select, Statistic } from 'antd';
+import { Divider, Flex, Select, Space, Statistic } from 'antd';
 import React, { useState } from 'react';
 
 export const Line: React.FC = () => {
@@ -10,7 +10,7 @@ export const Line: React.FC = () => {
         <Divider type="horizontal" orientation="left">
           Line
         </Divider>
-        <Flex>
+        <Flex justify='space-between' align='center'>
           <Select
             size="middle"
             placeholder="Select Line"
@@ -28,8 +28,10 @@ export const Line: React.FC = () => {
             }}
             style={{ width: 120 }}
           />
-          <Statistic title="Feeder Slots" value={400} valueStyle={{ color: '#3f8600' }} />
-          <Statistic title="Tower Slots" value={40} valueStyle={{ color: '#cf1322' }} />
+          <Space dir='row'>
+            <Statistic style={{ textAlign: 'center', marginRight: '1rem' }} title="Feeder Slots" value={400} valueStyle={{ color: '#3f8600' }} />
+            <Statistic style={{ textAlign: 'center' }} title="Tower Slots" value={40} valueStyle={{ color: '#cf1322' }} />
+          </Space>
         </Flex>
       </Flex>
     </>
