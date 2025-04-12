@@ -5,7 +5,6 @@ import { Layout as AntLayout, theme } from 'antd';
 import { Footer, Header } from '../index';
 
 import type { HeaderComponet } from '../Header';
-import { useWindowResize } from '../useWindowResize';
 
 export interface LayoutComponent {
   headerMenuItems: HeaderComponet['menuItems'];
@@ -13,7 +12,6 @@ export interface LayoutComponent {
 }
 
 export const Layout: React.FC<LayoutComponent> = ({ headerMenuItems, headerSelectedMenuItemsKeys }) => {
-  const [isPassed] = useWindowResize('md', false);
   const { token } = theme.useToken();
 
   return (
@@ -25,7 +23,6 @@ export const Layout: React.FC<LayoutComponent> = ({ headerMenuItems, headerSelec
       <Header selectedMenuItems={headerSelectedMenuItemsKeys} menuItems={headerMenuItems} />
       <AntLayout.Content
         style={{
-          padding: isPassed === false ? '16px' : 0,
           display: 'flex',
         }}
       >

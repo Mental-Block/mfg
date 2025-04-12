@@ -15,6 +15,11 @@ services:
       timeout: 5s
       retries: 10
       start_period: 40s
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
   db_setup:
     image: ghcr.io/jackc/tern:v2.3.2
     restart: no
@@ -22,7 +27,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./database/migrations/:/db/
+      - ./database/postgres/migrations/:/db/
     entrypoint:
       [
         "/tern",
@@ -41,3 +46,12 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PWD}
     ports:
       - "${PGADMIN_PORT_EXTERNAL}:${PGADMIN_PORT}"
+  db_cache:
+    container_name: redis_container
+    image: redis:8.0-M04  
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+
+    
