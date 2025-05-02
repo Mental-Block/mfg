@@ -114,7 +114,7 @@ VALUES
 (19, 'Package S', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
 (20, 'Package T', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
-INSERT INTO public.auth
+INSERT INTO auth.auth
 (
     auth_id
     ,oauth 

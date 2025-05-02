@@ -208,15 +208,6 @@ ALTER TABLE IF EXISTS public.feeder
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS public.user
-    ADD CONSTRAINT fk_user_auth
-    FOREIGN KEY (auth_id)
-    REFERENCES public.auth (auth_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-	NOT VALID
-    DEFERRABLE INITIALLY DEFERRED;
-
 ---- create above / drop below ----
 
 DROP TABLE public.line_job; 
