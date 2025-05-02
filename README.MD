@@ -26,7 +26,11 @@ still don't know what im going to put here ............
 
 - **Aaron T** - [Aaron](https://github.com/Mental-Block)
 
-##
+## Stop local POstgres instance
+
+```
+sudo /etc/init.d/postgresql stop
+```
 
 ## License
 

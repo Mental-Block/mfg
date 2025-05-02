@@ -13,13 +13,13 @@ type JWTConfig struct {
 	secret []byte
 }
 
-func New(salt string) ports.TokenService {
+func New(secret string) ports.TokenService {
 	return &JWTConfig{
-		secret: []byte(salt),
+		secret: []byte(secret),
 	}
 }
 
-func (t *JWTConfig) CreateToken(claims jwt.MapClaims) (*string, error) {
+func (t *JWTConfig) Create(claims jwt.MapClaims) (*string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString(t.secret)
@@ -31,7 +31,7 @@ func (t *JWTConfig) CreateToken(claims jwt.MapClaims) (*string, error) {
 	return &tokenString, nil
 }
 
-func (t *JWTConfig) ParseToken(token string) (jwt.MapClaims, error) {
+func (t *JWTConfig) Parse(token string) (jwt.MapClaims, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return t.secret, nil
 	})
@@ -48,7 +48,7 @@ func (t *JWTConfig) ParseToken(token string) (jwt.MapClaims, error) {
 	return nil, ErrInvalidToken
 }
 
-func (t *JWTConfig) VerifyToken(token string) error {
+func (t *JWTConfig) Verify(token string) error {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (any, error) {
 		return t.secret, nil
 	})

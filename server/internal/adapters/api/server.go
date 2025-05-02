@@ -14,7 +14,6 @@ import (
 type Services struct {
 	AuthService  ports.AuthService
 	UserService  ports.UserService
-	TokenService ports.TokenService
 }
 
 type API struct {
@@ -46,7 +45,7 @@ func NewAPI(services Services, opts ...APIOption) *API {
 
 	api.server = http.Server{
 		Addr:    fmt.Sprintf("%v:%v", api.host, api.port),
-		Handler: api.router,
+		Handler: cors(api.router),
 	}
 
 	if _, ok := api.router.(*chi.Mux); ok && api.version == "1.0.0" {

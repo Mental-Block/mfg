@@ -6,13 +6,15 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/env"
+	"github.com/server/internal/core/domain"
 )
 
-type LogoutRequest struct{}
+type LogoutRequest struct{
+	Cookie http.Cookie `cookie:"mfg-refresh-token"`
+}
 
 type LogoutResponse struct {
-	refreshToken http.Cookie `header:"refreshtoken"`
+	SetCookie []*http.Cookie `header:"Set-Cookie"`
 }
 
 func (s *ServiceInject) Logout(api huma.API) {
@@ -21,35 +23,38 @@ func (s *ServiceInject) Logout(api huma.API) {
 		Tags:          []string{"authentication"},
 		OperationID:   "logout-account",
 		Summary:       "logout account",
-		Description:   "removes refresh token and auth token",
+		Description:   "Removes refresh token and auth token. Logging out the user",
 		Path:          "/logout/",
-		Method:        http.MethodPost,
+		Method:        http.MethodGet,
 		DefaultStatus: http.StatusOK,
 		Security: []map[string][]string{
-			{"refreshToken": {"scope1"}},
-			{"authToken": {"scope2"}},
+			{domain.AuthTokenName: {"scope1"}},
 		},
 	}, func(ctx context.Context, req *LogoutRequest) (*LogoutResponse, error) {
 
-		cfg := env.Env()
+		err := s.authService.Logout(ctx, req.Cookie.Value)
 
-		cookie := http.Cookie{
-			Name:    "refresh token",
-			Expires: time.Now().AddDate(0, 0, 30),
+		if (err != nil) {
+			huma.Error400BadRequest("%v", err)
 		}
 
-		if env.Enviroment[cfg.ENV] == "development" {
-			cookie.HttpOnly = false
-			cookie.SameSite = http.SameSiteNoneMode
-		}
+		resp := &LogoutResponse{}
 
-		if env.Enviroment[cfg.ENV] == "production" || env.Enviroment[cfg.ENV] == "test" {
-			cookie.HttpOnly = true
-			cookie.SameSite = http.SameSiteStrictMode
-		}
-
-		resp := &LogoutResponse{
-			refreshToken: cookie,
+		resp.SetCookie = []*http.Cookie{
+			{
+				Name: domain.RefreshTokenName,
+				Value:   "",
+				Expires:  time.Unix(0, 0),
+				MaxAge:   -1,
+				Path: "/",
+			},
+			{
+				Name: domain.AuthTokenName,
+				Value:   "",
+				Expires:  time.Unix(0, 0),
+				MaxAge:   -1,
+				Path: "/",
+			},
 		}
 
 		return resp, nil

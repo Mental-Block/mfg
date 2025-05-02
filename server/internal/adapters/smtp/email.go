@@ -2,7 +2,9 @@ package smtp
 
 import (
 	"fmt"
+	"net"
 	"net/smtp"
+	"strings"
 )
 
 func (s *SMTP) VerificationTemplate(apiEndpoint string) string {
@@ -133,8 +135,8 @@ func (s *SMTP) VerificationTemplate(apiEndpoint string) string {
             </tr>
             <tr>
               <td align="left" bgcolor="#ffffff" style="padding: 1.5rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-size: 1rem; line-height: 1.5rem;">
-                <p style="margin: 0;">If that doesn't work, copy and paste the following link in your browser:</p>
-                <p style="margin: 0;"><a href="%v" target="_blank">%v</a></p>
+                <p style="margin: 0; color: black;">If that doesn't work, copy and paste the following link in your browser:</p>
+                <a style="margin: 0;" href="%v" target="_blank">%v</a>
               </td>
             </tr>
             <tr>
@@ -290,8 +292,8 @@ func (s *SMTP) RestPasswordTemplate(apiEndpoint string) string {
               </tr>
               <tr>
                 <td align="left" bgcolor="#ffffff" style="padding: 1.5rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-size: 1rem; line-height: 1.5rem;">
-                  <p style="margin: 0;">If that doesn't work, copy and paste the following link in your browser:</p>
-                  <p style="margin: 0;"><a href="%v" target="_blank">"%v"</a></p>
+                  <p style="margin: 0; color: black;">If that doesn't work, copy and paste the following link in your browser:</p>
+                  <a style="margin: 0;" href="%v" target="_blank">"%v"</a>
                 </td>
               </tr>
               <tr>
@@ -317,6 +319,27 @@ func (s *SMTP) RestPasswordTemplate(apiEndpoint string) string {
     </body>
     </html>
   `, apiEndpoint, apiEndpoint, apiEndpoint)
+}
+
+func (s *SMTP) DNSLookUp(email string) (error) {
+
+	parts := strings.Split(email, "@")
+
+	if (len(parts) != 2) {
+		return fmt.Errorf("invalid email address spliting")
+	} 
+
+	mx, err := net.LookupMX(parts[1])
+
+	if (err != nil ) {
+		return err
+	}
+
+  if (len(mx) == 0) {
+    return fmt.Errorf("no email found")
+  }
+
+  return nil
 }
 
 func (s *SMTP) Send(to []string, subject string, mime string, msg string) error {

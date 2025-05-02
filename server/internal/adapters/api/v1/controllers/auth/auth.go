@@ -19,14 +19,13 @@ func NewServiceInject(authService ports.AuthService, grp *huma.Group) *ServiceIn
 
 func (s *ServiceInject) Routes() {
 	authGrp := huma.NewGroup(s.parrentGrp, "/auth")
-
-	s.AuthToken(authGrp)
+	
 	s.Login(authGrp)
 	s.Logout(authGrp)
-	//s.RefreshToken(authGrp)
+	s.Refresh(authGrp)
 	s.Register(authGrp)
+	s.FinishRegister(authGrp)
 	s.ResetPassword(authGrp)
 	s.UpdatePassword(authGrp)
-	s.VerifyEmail(authGrp)
-
+	s.Verify(authGrp)
 }

@@ -18,11 +18,6 @@ var (
 	ErrEmailToolong       = errors.New("email supplied is too long. Max 255 Chars")
 )
 
-func valid(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err == nil
-}
-
 func NewEmail(email string) (Email, error) {
 	email = strings.TrimSpace(email)
 
@@ -30,7 +25,7 @@ func NewEmail(email string) (Email, error) {
 		return "", ErrEmptyEmail
 	}
 
-	if !valid(email) {
+	if _, err := mail.ParseAddress(email); err != nil {
 		return "", ErrInvalidEmailFormat
 	}
 

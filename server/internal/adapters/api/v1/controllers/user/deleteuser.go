@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/server/internal/core/domain"
 )
 
 type DeleteUserRequest struct {
@@ -25,7 +26,7 @@ func (s *ServiceInject) deleteUser(api huma.API) {
 		Method:        http.MethodDelete,
 		DefaultStatus: http.StatusOK,
 		Security: []map[string][]string{
-			{"defaultAuth": {"accountHolder"}},
+			{domain.AuthTokenName: {"accountHolder"}},
 		},
 	}, func(ctx context.Context, req *DeleteUserRequest) (*DeleteUserResponse, error) {
 		if req.Id == "" {

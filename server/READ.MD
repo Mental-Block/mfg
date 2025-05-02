@@ -1,3 +1,5 @@
-## Setup Open API GUI
+## Golang Http REST API
 
-- Go to `http://localhost:8000/api/` or whatever WEB_PORT and WEB_HOST is specified to.
+- Go to `http://WEB_HOST:WEB_PORT/docs` or whatever WEB_PORT and WEB_HOST is specified to for open api documentation
+
+## Authentication Flow

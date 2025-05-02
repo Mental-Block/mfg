@@ -16,7 +16,9 @@ module.exports = {
     alias: {
       '@assets': path.resolve(__dirname, './assets'),
       '@Layout': path.resolve(__dirname, './src/Layout'),
+      '@Pages': path.resolve(__dirname, './src/Pages'),
       '@CSS': path.resolve(__dirname, './src/CSS'),
+      '@Shared': path.resolve(__dirname, './src/Shared'),
     },
   },
   module: {
@@ -45,6 +47,7 @@ module.exports = {
   devServer: {
     open: true,
     hot: true,
+    port: 8080,
     historyApiFallback: {
       rewrites: [{ from: /./, to: '/index.html' }],
     },

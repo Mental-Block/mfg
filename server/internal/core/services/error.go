@@ -12,6 +12,7 @@ var (
 	ErrUserStore         = errors.New("user store error")
 	ErrUserProfileStore  = errors.New("user profile store error")
 	ErrUserAuthStore     = errors.New("user auth store error")
+ 	ErrTokenStore        = errors.New("token store error")
 	ErrEmailService      = errors.New("email service error")
 	ErrSigningToken      = errors.New("problem occured when signing token")
 	ErrInvalidToken      = errors.New("token not valid")

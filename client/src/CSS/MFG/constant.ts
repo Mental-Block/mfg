@@ -4,15 +4,15 @@ export const PREFIX = 'MFG-theme';
 
 export const DOT_PREFIX = `.${PREFIX}`;
 
-const blackRed = '#170b0b';
+const black = '#171717';
 
 export const defualtTheme: ThemeConfig = {
   components: {
     Layout: {
       footerPadding: '2rem 1rem',
-      footerBg: blackRed,
-      triggerBg: blackRed,
-      headerBg: blackRed,
+      footerBg: black,
+      triggerBg: black,
+      headerBg: black,
       headerColor: '#FFF',
     },
   },

@@ -81,7 +81,18 @@ func (s *UserService) RemoveUser(ctx context.Context, id int) (*domain.Id, error
 }
 
 func (s *UserService) GetUser(ctx context.Context, email string) (*domain.User, error) {
-	user, err := s.userStore.Select(ctx, domain.Email(email))
+
+	validEmail, err := domain.NewEmail(email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := s.userStore.Select(ctx, validEmail)
+
+	if err == domain.ErrDataNotFound {
+		return nil, nil
+	}
 
 	if err != nil {
 		slog.Error(err.Error())

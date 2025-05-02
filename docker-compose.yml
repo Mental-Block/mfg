@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PWD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "${POSTGRES_PORT_EXTERNAL}:${POSTGRES_PORT}"
@@ -15,11 +15,9 @@ services:
       timeout: 5s
       retries: 10
       start_period: 40s
-    #volumes:
-    #  - type: tmpfs
-    #    target: /dev/shm
-    #    tmpfs:
-    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    volumes:
+      - "./database/postgres/data/:/db-data"
+      - "./database/postgres/migrations/:/db-migration"
   db_setup:
     image: ghcr.io/jackc/tern:v2.3.2
     restart: no
@@ -27,15 +25,15 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./database/postgres/migrations/:/db/
+      - "./database/postgres/migrations/:/db-migration"
     entrypoint:
       [
         "/tern",
         "migrate",
         "--migrations",
-        "/db/",
+        "/db-migration",
         "--conn-string",
-        "postgres://${POSTGRES_USER}:${POSTGRES_PWD}@${POSTGRES_HOST}:${POSTGRES_PORT_EXTERNAL}/${POSTGRES_DB}?sslmode=disable",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT_EXTERNAL}/${POSTGRES_DB}?sslmode=disable",
       ]
   pgadmin:
     container_name: pgadmin4_container
@@ -43,15 +41,19 @@ services:
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PWD}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "${PGADMIN_PORT_EXTERNAL}:${PGADMIN_PORT}"
   db_cache:
     container_name: redis_container
-    image: redis:8.0-M04  
+    image: redis:8.0-M04
     restart: always
     ports:
-      - '6379:6379'
+      - "6379:6379"
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-
-    
+    volumes:
+      - "./database/redis/data/:/db-cache"
+volumes:
+  db-data:
+  db-migration:
+  db-cache:

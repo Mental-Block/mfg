@@ -117,9 +117,6 @@ VALUES
 INSERT INTO public.auth
 (
     auth_id
-    ,verified
-    ,password_reset_token -- delete in the future once redis is added
-    ,email_verification_token -- delete in the future once redis is added
     ,oauth 
     ,password
     ,email
@@ -130,26 +127,26 @@ INSERT INTO public.auth
 )
 OVERRIDING SYSTEM VALUE
 VALUES
-(1, false, NULL, NULL, false, 'password', 'user1@example.com', NULL, NULL, 'admin', '2025-03-05 09:00:00'),
-(2, false, NULL, NULL, false, 'password', 'user2@example.com', NULL, NULL, 'admin', '2025-03-05 09:05:00'),
-(3, false, NULL, NULL, false, 'password', 'user3@example.com', NULL, NULL, 'admin', '2025-03-05 09:10:00'),
-(4, true, NULL, NULL, false, 'password', 'user4@example.com', NULL, NULL, 'admin', '2025-03-05 09:15:00'),
-(5, true, NULL, NULL, false, 'password', 'user5@example.com', NULL, NULL, 'admin', '2025-03-05 09:20:00'),
-(6, false, NULL, NULL, false, 'password', 'user6@example.com', NULL, NULL, 'admin', '2025-03-05 09:25:00'),
-(7, true, NULL, NULL, false, 'password', 'user7@example.com', NULL, NULL, 'admin', '2025-03-05 09:30:00'),
-(8, true, NULL, NULL, false, 'password', 'user8@example.com', NULL, NULL, 'admin', '2025-03-05 09:35:00'),
-(9, false, NULL, NULL, false, 'password', 'user9@example.com', NULL, NULL, 'admin', '2025-03-05 09:40:00'),
-(10, false, NULL, NULL, false, 'password', 'user10@example.com', NULL, NULL, 'admin', '2025-03-05 09:45:00'),
-(11, false, NULL, NULL, false, 'password', 'user11@example.com', NULL, NULL, 'admin', '2025-03-05 09:50:00'),
-(12, true, NULL, NULL, false, 'password', 'user12@example.com', NULL, NULL, 'admin', '2025-03-05 09:55:00'),
-(13, true, NULL, NULL, false, 'password', 'user13@example.com', NULL, NULL, 'admin', '2025-03-05 10:00:00'),
-(14, true, NULL, NULL, false, 'password', 'user14@example.com', NULL, NULL, 'admin', '2025-03-05 10:05:00'),
-(15, true, NULL, NULL, false, 'password', 'user15@example.com', NULL, NULL, 'admin', '2025-03-05 10:10:00'),
-(16, true, NULL, NULL, false, 'password', 'user16@example.com', NULL, NULL, 'admin', '2025-03-05 10:15:00'),
-(17, true, NULL, NULL, false, 'password', 'user17@example.com', NULL, NULL, 'admin', '2025-03-05 10:20:00'),
-(18, true, NULL, NULL, false, 'password', 'user18@example.com', NULL, NULL, 'admin', '2025-03-05 10:25:00'),
-(19, true, NULL, NULL, false, 'password', 'user19@example.com', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
-(20, true, NULL, NULL, false, 'password', 'user20@example.com', NULL, NULL, 'admin', '2025-03-05 10:35:00');
+(1,  false, 'password', 'user1@example.com', NULL, NULL, 'admin', '2025-03-05 09:00:00'),
+(2,  false, 'password', 'user2@example.com', NULL, NULL, 'admin', '2025-03-05 09:05:00'),
+(3,  false, 'password', 'user3@example.com', NULL, NULL, 'admin', '2025-03-05 09:10:00'),
+(4,  false, 'password', 'user4@example.com', NULL, NULL, 'admin', '2025-03-05 09:15:00'),
+(5,  false, 'password', 'user5@example.com', NULL, NULL, 'admin', '2025-03-05 09:20:00'),
+(6,  false, 'password', 'user6@example.com', NULL, NULL, 'admin', '2025-03-05 09:25:00'),
+(7,  false, 'password', 'user7@example.com', NULL, NULL, 'admin', '2025-03-05 09:30:00'),
+(8,  false, 'password', 'user8@example.com', NULL, NULL, 'admin', '2025-03-05 09:35:00'),
+(9,  false, 'password', 'user9@example.com', NULL, NULL, 'admin', '2025-03-05 09:40:00'),
+(10, false, 'password', 'user10@example.com', NULL, NULL, 'admin', '2025-03-05 09:45:00'),
+(11, false, 'password', 'user11@example.com', NULL, NULL, 'admin', '2025-03-05 09:50:00'),
+(12, false, 'password', 'user12@example.com', NULL, NULL, 'admin', '2025-03-05 09:55:00'),
+(13, false, 'password', 'user13@example.com', NULL, NULL, 'admin', '2025-03-05 10:00:00'),
+(14, false, 'password', 'user14@example.com', NULL, NULL, 'admin', '2025-03-05 10:05:00'),
+(15, false, 'password', 'user15@example.com', NULL, NULL, 'admin', '2025-03-05 10:10:00'),
+(16, false, 'password', 'user16@example.com', NULL, NULL, 'admin', '2025-03-05 10:15:00'),
+(17, false, 'password', 'user17@example.com', NULL, NULL, 'admin', '2025-03-05 10:20:00'),
+(18, false, 'password', 'user18@example.com', NULL, NULL, 'admin', '2025-03-05 10:25:00'),
+(19, false, 'password', 'user19@example.com', NULL, NULL, 'admin', '2025-03-05 10:30:00'),
+(20, false, 'password', 'user20@example.com', NULL, NULL, 'admin', '2025-03-05 10:35:00');
 
 INSERT INTO public.user
 (

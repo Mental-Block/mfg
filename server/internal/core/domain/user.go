@@ -6,23 +6,16 @@ import (
 
 var ErrUserNotFound = errors.New("user does not exist")
 
-type UserAuth struct {
+
+type User struct {
 	Id       Id
-	Verified bool
-	OAuth    bool
+	Username Username
 	Email    Email
 	Password Password
+	OAuth    bool
 }
 
 type UserProfile struct {
 	Id       Id
 	Username Username
-}
-
-type User struct {
-	Id       Id
-	Username Username
-	Verified bool
-	OAuth    bool
-	Email    Email
 }

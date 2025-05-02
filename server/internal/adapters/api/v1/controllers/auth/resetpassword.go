@@ -9,9 +9,7 @@ import (
 
 type ResetPasswordRequest struct {
 	Body struct {
-		id          int    `example:"123" doc:"unique identifier"`
-		OldPassword string `example:"MyOldPassword123!" minLength:"8" maxLength:"64" doc:"accounts current password. passwords are hased on client side and server side"`
-		Password    string `example:"MyNewPassword123!" minLength:"8" maxLength:"64" doc:"accounts new password. passwords are hased on client side and server side"`
+		Email string `example:"bob@gmail.com" maxLength:"255" doc:"unique email to each account"`
 	}
 }
 
@@ -29,7 +27,12 @@ func (s *ServiceInject) ResetPassword(api huma.API) {
 		Method:        http.MethodPost,
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *ResetPasswordRequest) (*ResetPasswordResponse, error) {
-		//	s.authService.ResetPassword(ctx, req.Body.)
+	
+		err := s.authService.ResetPassword(ctx, req.Body.Email)
+
+		if err != nil {
+			return nil, huma.Error500InternalServerError(err.Error())
+		}
 
 		resp := &ResetPasswordResponse{
 			Body: true,

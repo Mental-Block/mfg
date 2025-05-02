@@ -28,4 +28,5 @@ func (s *ServiceInject) Routes() {
 	s.getUserProfile(usersGrp)
 	s.getProfiles(usersGrp)
 	s.deleteUser(usersGrp)
+	s.isUserTaken(usersGrp)
 }

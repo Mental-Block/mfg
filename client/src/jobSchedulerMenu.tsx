@@ -12,6 +12,7 @@ import {
   SwapOutlined,
   PieChartOutlined,
   EditOutlined,
+  LineOutlined,
 } from '@ant-design/icons';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -65,6 +66,33 @@ const menu: ItemType<MenuItemType>[] | undefined = [
       {
         key: uuidv4(),
         label: <Link to="job/edit">Edit</Link>,
+        icon: React.createElement(EditOutlined),
+      },
+    ],
+  },
+  {
+    key: uuidv4(),
+    icon: React.createElement(LineOutlined),
+    label: 'Line',
+    children: [
+      {
+        key: uuidv4(),
+        label: <Link to="line/add">Add</Link>,
+        icon: React.createElement(PlusOutlined),
+      },
+      {
+        key: uuidv4(),
+        label: <Link to="line/remove">Remove</Link>,
+        icon: React.createElement(MinusOutlined),
+      },
+      {
+        key: uuidv4(),
+        label: <Link to="line/transfer">Transfer</Link>,
+        icon: React.createElement(SwapOutlined),
+      },
+      {
+        key: uuidv4(),
+        label: <Link to="line/edit">Edit</Link>,
         icon: React.createElement(EditOutlined),
       },
     ],

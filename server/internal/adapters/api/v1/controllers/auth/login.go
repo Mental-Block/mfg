@@ -7,18 +7,18 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/server/internal/adapters/env"
+	"github.com/server/internal/core/domain"
 )
 
 type LoginRequest struct {
 	Body struct {
 		Email    string `example:"bob@gmail.com" maxLength:"255" doc:"unique email to each account"`
 		Password string `example:"MyNewPassword123!" minLength:"8" maxLength:"64" doc:"account login password"`
-		OAuth    bool   `example:"false" doc:"wheather account is using oauth or not"`
 	}
 }
 
 type LoginResponse struct {
-	refreshToken http.Cookie `header:"Set-Cookie"`
+	SetCookie http.Cookie `header:"Set-Cookie"`
 }
 
 func (s *ServiceInject) Login(api huma.API) {
@@ -32,11 +32,10 @@ func (s *ServiceInject) Login(api huma.API) {
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
 
-		_, err := s.authService.Login(
+		token, err := s.authService.Login(
 			ctx,
 			req.Body.Email,
 			req.Body.Password,
-			req.Body.OAuth,
 		)
 
 		if err != nil {
@@ -46,24 +45,27 @@ func (s *ServiceInject) Login(api huma.API) {
 		cfg := env.Env()
 
 		cookie := http.Cookie{
-			Name:    "refresh token",
-			Expires: time.Now().AddDate(0, 0, 30),
+			Name:    domain.RefreshTokenName,
+			Value:   *token,
+			Expires: time.Now().Add(domain.RefreshTokenDuration),
+			Path: "/",
 		}
 
-		if env.Enviroment[cfg.ENV] == "development" {
+		if cfg.ENV == env.Development {
+			cookie.Secure = false	
 			cookie.HttpOnly = false
-			cookie.SameSite = http.SameSiteNoneMode
-			cookie.Domain = "localhost"
-			cookie.Secure = false
+			cookie.SameSite = http.SameSiteLaxMode
 		}
 
-		if env.Enviroment[cfg.ENV] == "production" || env.Enviroment[cfg.ENV] == "test" {
+		if cfg.ENV == env.Production || cfg.ENV == env.Test {
+			cookie.Domain = cfg.SMTP.Host
 			cookie.HttpOnly = true
+			cookie.Secure = true
 			cookie.SameSite = http.SameSiteStrictMode
 		}
 
 		resp := &LoginResponse{
-			refreshToken: cookie,
+			SetCookie: cookie,
 		}
 
 		return resp, nil

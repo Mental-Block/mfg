@@ -9,8 +9,10 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@Shared/*": ["src/Shared/*"],
       "@assets/*": ["assets/*"],
       "@Layout/*": ["src/Layout/*"],
+      "@Pages/*": ["src/Pages/*"],
       "@CSS/*": ["src/CSS/*"]
     }
   },

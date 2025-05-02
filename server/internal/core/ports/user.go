@@ -20,22 +20,14 @@ type UserService interface {
 }
 
 type UserStore interface {
+	SelectEmail(ctx context.Context, id domain.Id) (*domain.Email, error)
 	Delete(ctx context.Context, id domain.Id) (*domain.Id, error)
 	Insert(ctx context.Context, email domain.Email, password domain.Password, username domain.Username, oauth bool) (*domain.Id, error)
 	Select(ctx context.Context, email domain.Email) (*domain.User, error)
 }
 
 type UserProfileStore interface {
-	SelectEmail(ctx context.Context, id domain.Id) (*domain.Email, error)
 	SelectUsers(ctx context.Context) ([]domain.UserProfile, error)
 	Select(ctx context.Context, id domain.Id) (*domain.UserProfile, error)
 	Update(ctx context.Context, id domain.Id, username domain.Username) (*domain.UserProfile, error)
-}
-
-type UserAuthStore interface {
-	UpdateVerified(ctx context.Context, email domain.Email) error
-	UpdateVerifiedToken(ctx context.Context, email domain.Email, token string) error
-	UpdatePassword(ctx context.Context, email domain.Email, password domain.Password) error
-	UpdateResetPasswordToken(ctx context.Context, email domain.Email, token string) error
-	Select(ctx context.Context, email domain.Email) (*domain.UserAuth, error)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,198 +13,191 @@ import (
 )
 
 type AuthService struct {
-	userStore       ports.UserStore
-	authStore       ports.UserAuthStore
-	passwordService ports.PasswordService
-	emailService    ports.SMTPService
-	jwtService      ports.TokenService
+	userStore       	ports.UserStore
+	authStore       	ports.AuthStore
+	tokenStore      	ports.TokenStore
+	passwordService 	ports.PasswordService
+	emailService    	ports.SMTPService
+	authTokenService  	ports.TokenService
+	emailTokenService 	ports.TokenService
 }
 
 func NewAuthService(
 	user ports.UserStore,
-	auth ports.UserAuthStore,
-	smtp ports.SMTPService,
-	jwt ports.TokenService,
+	auth ports.AuthStore,
+	tokenStore ports.TokenStore,
 	password ports.PasswordService,
+	smtp ports.SMTPService,
+	authToken ports.TokenService,
+	emailToken ports.TokenService,
 ) *AuthService {
 	return &AuthService{
 		userStore:       user,
 		authStore:       auth,
+		tokenStore:      tokenStore,
 		emailService:    smtp,
-		jwtService:      jwt,
+		authTokenService:    authToken,
 		passwordService: password,
+		emailTokenService: emailToken,
 	}
 }
 
-func (s *AuthService) NewRefreshToken() (*string, error) {
-	return s.jwtService.CreateToken(jwt.MapClaims{
-		"exp": time.Now().Add((time.Hour * 24 * 30)).Unix(),
+func (s *AuthService) NewRefreshToken(id domain.Id) (*string, error) {
+	return s.authTokenService.Create(jwt.MapClaims{
+		"id": id,
+		"exp": time.Now().Add(domain.RefreshTokenDuration).Unix(),
 	})
 }
 
-func (s *AuthService) newPasswordResetToken(email domain.Email) (*string, error) {
-	return s.jwtService.CreateToken(jwt.MapClaims{
+func (s *AuthService) NewPasswordResetToken(email domain.Email) (*string, error) {
+	return s.emailTokenService.Create(jwt.MapClaims{
 		"email": email,
-		"exp":   time.Now().Add((time.Minute * 5)).Unix(),
+		"exp":   time.Now().Add(domain.PasswordResetTokenDuration).Unix(),
 	})
 }
 
-func (s *AuthService) newVerificationToken(email domain.Email) (*string, error) {
-	return s.jwtService.CreateToken(jwt.MapClaims{
+func (s *AuthService) NewEmailVerificationToken(email domain.Email) (*string, error) {
+	return s.emailTokenService.Create(jwt.MapClaims{
 		"email": email,
-		"exp":   time.Now().Add((time.Minute * 15)).Unix(),
+		"exp":   time.Now().Add(domain.AuthTokenDuration).Unix(),
 	})
 }
 
 func (s *AuthService) NewAuthToken(id domain.Id, roles []string) (*string, error) {
-	return s.jwtService.CreateToken(jwt.MapClaims{
+	return s.authTokenService.Create(jwt.MapClaims{
 		"id":    id,
 		"roles": roles,
-		"exp":   time.Now().Add((time.Hour * 24 * 30)).Unix(),
+		"exp":   time.Now().Add(domain.AuthTokenDuration).Unix(),
 	})
 }
 
-func (s *AuthService) Login(ctx context.Context, email string, password string, oauth bool) (*string, error) {
+func (s *AuthService) Permission() {
+	
+	
+	//s.userStore.
+
+	//s.authStore.SelectUser(ctx, )
+
+
+}
+
+func (s *AuthService) LoginOAuth(ctx context.Context) {
+
+}
+
+func (s *AuthService) Login(ctx context.Context, email string, password string) (*string, error) {
 	validEmail, err := domain.NewEmail(email)
 
 	if err != nil {
 		return nil, fmt.Errorf("invalid email supplied: %w", err)
 	}
+	
+	validPassword, err := domain.NewPassword(password)
 
-	if oauth {
-		if err := s.loginOAuth(ctx, validEmail); err != nil {
-			return nil, err
-		}
-	} else {
-		validPassword, err := domain.NewPassword(password)
-
-		if err != nil {
-			return nil, fmt.Errorf("invalid password supplied: %w", err)
-		}
-
-		if err := s.loginDefault(ctx, validEmail, validPassword); err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, fmt.Errorf("invalid password supplied: %w", err)
 	}
 
-	token, err := s.NewRefreshToken()
+	user, err := s.userStore.Select(ctx, validEmail)
 
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, ErrUserStore
+	}
+
+	if isVerified := s.passwordService.Verify(validPassword, user.Password); !isVerified {
+		return nil, ErrIncorrectPassword
+	}
+
+	token, err := s.NewRefreshToken(user.Id)
+	
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, ErrSigningToken
 	}
 
-	return token, nil
-}
+	key := strconv.Itoa(int(user.Id))
 
-func (s *AuthService) loginDefault(ctx context.Context, email domain.Email, password domain.Password) error {
-	user, err := s.authStore.Select(ctx, email)
+	err = s.tokenStore.Insert(ctx, key, *token, domain.RefreshTokenDuration) // insert refresh token
 
 	if err != nil {
 		slog.Error(err.Error())
-		return ErrUserStore
+		return nil, ErrTokenStore;
 	}
 
-	if isVerified := s.passwordService.VerifyPassword(password, user.Password); !isVerified || !user.Verified {
-		return ErrIncorrectPassword
+	return token, nil
+}
+
+func (s *AuthService) Logout(ctx context.Context, token string) error {
+	claims, err := s.authTokenService.Parse(token)
+
+	if err != nil {
+		return ErrInvalidToken
+	}
+
+	id := claims["id"].(int)
+
+	key := strconv.Itoa(id)
+	
+	err = s.tokenStore.Remove(ctx, key) // remove refresh token 
+
+	if err != nil {
+		slog.Error(err.Error())
+		return ErrTokenStore;
 	}
 
 	return nil
 }
 
-func (s *AuthService) loginOAuth(ctx context.Context, email domain.Email) error {
-	return nil
+func (s *AuthService) RegisterOAuth(ctx context.Context, email string) {
+
 }
 
-func (s *AuthService) Register(ctx context.Context, email string, username string, password string, oauth bool) (*string, error) {
+func (s *AuthService) Register(ctx context.Context, email string, username string, password string) (error) {
 
 	validEmail, err := domain.NewEmail(email)
 
 	if err != nil {
-		return nil, fmt.Errorf("invalid email supplied: %w", err)
+		return fmt.Errorf("invalid email supplied: %w", err)
 	}
-
-	user, err := s.authStore.Select(ctx, validEmail)
-
-	if err != nil && err != domain.ErrDataNotFound {
-		slog.Error(err.Error())
-		return nil, ErrUserAuthStore
-	}
-
-	if user != nil && user.Email == validEmail {
-		return nil, fmt.Errorf("email address is already registered")
-	}
-
+	
 	validUsername, err := domain.NewUsername(username)
 
 	if err != nil {
-		return nil, fmt.Errorf("invalid username supplied: %w", err)
+		return fmt.Errorf("invalid username supplied: %w", err)
 	}
 
-	if oauth {
-		if err := s.registerOAuth(ctx, validEmail, validUsername); err != nil {
-			slog.Error(err.Error())
-			return nil, err
-		}
-	} else {
-		validPassword, err := domain.NewPassword(password)
-
-		if err != nil {
-			return nil, fmt.Errorf("invalid password supplied: %w", err)
-		}
-
-		if err := s.registerDefualt(ctx, validEmail, validUsername, validPassword); err != nil {
-			slog.Error(err.Error())
-			return nil, err
-		}
-	}
-
-	token, err := s.NewRefreshToken()
+	validPassword, err := domain.NewPassword(password)
 
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, ErrSigningToken
+		return fmt.Errorf("invalid password supplied: %w", err)
 	}
 
-	return token, nil
-}
+	user, err := s.userStore.Select(ctx, validEmail)
 
-func (s *AuthService) registerOAuth(ctx context.Context, email domain.Email, username domain.Username) error {
-	_, err := s.userStore.Insert(ctx, email, domain.Password(""), username, true)
-
-	if err != nil {
+	if err != nil && err != domain.ErrDataNotFound {
 		slog.Error(err.Error())
-		return ErrUserStore
+		return  ErrUserAuthStore
 	}
 
-	return nil
-}
-
-func (s *AuthService) registerDefualt(ctx context.Context, email domain.Email, username domain.Username, password domain.Password) error {
-	hashedPassword := s.passwordService.HashPassword(password)
-
-	_, err := s.userStore.Insert(ctx, email, domain.Password(hashedPassword), username, false)
-
-	if err != nil {
-		slog.Error(err.Error())
-		return ErrUserStore
+	if user != nil && user.Email == validEmail {
+		return  fmt.Errorf("email address is already registered")
 	}
 
-	token, err := s.newVerificationToken(email)
+	err = s.emailService.DNSLookUp(string(validEmail))
+	
+	if (err != nil) {
+		return err
+	}
+
+	token, err := s.NewEmailVerificationToken(validEmail)
 
 	if err != nil {
 		slog.Error(err.Error())
 		return ErrSigningToken
 	}
 
-	err = s.authStore.UpdateVerifiedToken(ctx, email, *token)
-
-	if err != nil {
-		slog.Error(err.Error())
-		return ErrUserAuthStore
-	}
-
-	validationEndPoint := fmt.Sprintf("http://localhost:8084/api/v1/auth/verify/%v", token)
+	validationEndPoint := fmt.Sprintf("http://localhost:8080/confirm-account/%s", *token)
 
 	err = s.emailService.Send(
 		[]string{"aaron.tibben@gmail.com"},
@@ -214,22 +208,18 @@ func (s *AuthService) registerDefualt(ctx context.Context, email domain.Email, u
 
 	if err != nil {
 		slog.Error(err.Error())
-		return ErrEmailService
+		return  ErrEmailService
 	}
 
-	return nil
-}
+	hashedPassword := s.passwordService.Hash(validPassword)
 
-func (s *AuthService) VerifyUser(ctx context.Context, token string) error {
-	claims, err := s.jwtService.ParseToken(token)
-
-	if err != nil {
-		return ErrInvalidToken
-	}
-
-	email := claims["email"].(domain.Email)
-
-	err = s.authStore.UpdateVerified(ctx, email)
+	err = s.authStore.InsertUser(
+		ctx, 
+		validEmail, 
+		hashedPassword, 
+		validUsername,
+		*token,
+	)
 
 	if err != nil {
 		slog.Error(err.Error())
@@ -239,14 +229,72 @@ func (s *AuthService) VerifyUser(ctx context.Context, token string) error {
 	return nil
 }
 
-func (s *AuthService) UpdatePassword(ctx context.Context, token string, password string) error {
-	claims, err := s.jwtService.ParseToken(token)
+func (s *AuthService) Verify(ctx context.Context, token string) (string, error) {
+	claims, err := s.emailTokenService.Parse(token)
 
 	if err != nil {
+		return "", ErrInvalidToken
+	}
+
+	email := claims["email"].(string)
+
+	return email, nil
+}
+
+func (s *AuthService) FinishRegister(ctx context.Context, token string) error {
+	email, err := s.Verify(ctx, token)
+
+	if (err != nil) {
+		return err
+	}
+
+	validEmail, err := domain.NewEmail(email)
+
+	if err != nil {
+		return fmt.Errorf("invalid email supplied: %w", err)
+	}
+
+	user, err := s.authStore.SelectUser(context.Background(), validEmail)
+
+	if (err != nil) {
+		slog.Error(err.Error())
+		return ErrUserStore
+	}
+
+	// prevent multiple active tokens, token must match current token
+	if (user.Token != token) {
 		return ErrInvalidToken
 	}
 
-	email := claims["email"].(domain.Email)
+	_, err = s.userStore.Insert(ctx, user.Email, user.Password, user.Username, false)
+    
+	if err != nil {
+		slog.Error(err.Error())
+		return ErrUserStore
+	}
+
+	err = s.authStore.RemoveUser(ctx, validEmail)
+
+	if err != nil {
+		return err
+	}
+
+	return nil 
+}
+
+func (s *AuthService) UpdatePassword(ctx context.Context, token string, password string) error {
+	email, err := s.Verify(ctx, token)
+
+	if (err != nil) {
+		slog.Error(token)
+		return err
+	}
+
+	validEmail, err := domain.NewEmail(email)
+
+	if err != nil {
+		return fmt.Errorf("invalid email supplied: %w", err)
+	}
 
 	newPassword, err := domain.NewPassword(password)
 
@@ -254,33 +302,68 @@ func (s *AuthService) UpdatePassword(ctx context.Context, token string, password
 		return fmt.Errorf("invalid password supplied: %w", err)
 	}
 
-	hashedpas := s.passwordService.HashPassword(newPassword)
+	user, err := s.userStore.Select(ctx, validEmail)
 
-	err = s.authStore.UpdatePassword(ctx, email, hashedpas)
+	if (err != nil) {
+		slog.Error(err.Error());
+		return err
+	}
+
+	curToken, err := s.tokenStore.Select(ctx, string(validEmail))
+
+	if (err != nil) {
+		slog.Error(err.Error())
+		return err
+	}
+	
+	// prevent multiple active tokens, token must match current token
+	if (*curToken != token) {
+		return  ErrInvalidToken
+	}
+
+	hashedpas := s.passwordService.Hash(newPassword)
+
+	err = s.authStore.UpdatePassword(ctx, validEmail, hashedpas)
 
 	if err != nil {
 		return ErrUserStore
 	}
 
+	err = s.tokenStore.Remove(ctx, email)
+
+	if err != nil {
+		slog.Error(err.Error())
+		return ErrTokenStore
+	}
+
+	key := strconv.Itoa(int(user.Id))
+	
+	err = s.tokenStore.Remove(ctx, key)
+	
+	if err != nil {
+		slog.Error(err.Error())
+		return ErrTokenStore;
+	}
+
 	return nil
 }
 
-func (s *AuthService) ResetPassword(ctx context.Context, email domain.Email) error {
-	token, err := s.newPasswordResetToken(email)
+func (s *AuthService) ResetPassword(ctx context.Context, email string) error {
+	
+	validEmail, err := domain.NewEmail(email)
+
+	if err != nil {
+		return fmt.Errorf("invalid email supplied: %w", err)
+	}
+
+	token, err := s.NewPasswordResetToken(validEmail)
 
 	if err != nil {
 		slog.Error(err.Error())
 		return ErrSigningToken
 	}
 
-	err = s.authStore.UpdateResetPasswordToken(ctx, email, *token)
-
-	if err != nil {
-		slog.Error(err.Error())
-		return ErrUserStore
-	}
-
-	validationEndPoint := fmt.Sprintf("http://localhost:8084/api/v1/auth/reset/%v", *token)
+	validationEndPoint := fmt.Sprintf("http://localhost:8080/confirm-account-reset/%s", *token)
 
 	err = s.emailService.Send(
 		[]string{"aaron.tibben@gmail.com"},
@@ -292,6 +375,13 @@ func (s *AuthService) ResetPassword(ctx context.Context, email domain.Email) err
 	if err != nil {
 		slog.Error(err.Error())
 		return ErrEmailService
+	}
+
+	err = s.tokenStore.Insert(ctx, string(validEmail), *token, domain.PasswordResetTokenDuration)
+
+	if err != nil {
+		slog.Error(err.Error())
+		return err
 	}
 
 	return nil

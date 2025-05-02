@@ -27,6 +27,24 @@ func isAlphanumeric(s string) bool {
 	return true
 }
 
+func SanitizeUsername(un string) (Username, error) {
+	un = strings.TrimSpace(un)
+
+	if un == "" {
+		return "", ErrEmptyUsername
+	}
+
+	if !isAlphanumeric(un) {
+		return "", ErrContainSpecialCharsInUsername
+	}
+
+	if !(len(un) <= maxUsernameLength) {
+		return "", ErrUsernameTooLong
+	}
+
+	return Username(un), nil
+}
+
 func NewUsername(un string) (Username, error) {
 	un = strings.TrimSpace(un)
 

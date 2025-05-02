@@ -10,15 +10,15 @@ import (
 type ENVIROMENT int
 
 const (
-	development ENVIROMENT = iota
-	production
-	test
+	Development ENVIROMENT = iota
+	Production
+	Test
 )
 
 var Enviroment = map[ENVIROMENT]string{
-	development: "development",
-	production:  "production",
-	test:        "test",
+	Development: "development",
+	Production:  "production",
+	Test:        "test",
 }
 
 type Config struct {
@@ -49,7 +49,8 @@ type APIConfig struct {
 	Host         string
 	Port         string
 	PasswordSalt string
-	JWTSalt      string
+	AuthSecret   string
+	EmailSecret  string
 }
 
 type PostgresConfig struct {
@@ -66,19 +67,19 @@ var (
 )
 
 func Env() *Config {
-	err := godotenv.Load("../../../.env")
+	err := godotenv.Load("../.env")
 
 	if err != nil {
 		log.Fatal("config failed: couldn't load .env")
 	}
 
 	switch os.Getenv("ENVIROMENT") {
-	case "production":
-		enviroment = production
-	case "test":
-		enviroment = test
-	default:
-		enviroment = development
+		case "production":
+			enviroment = Production
+		case "test":
+			enviroment = Test
+		default:
+			enviroment = Development
 	}
 
 	cfg := &Config{
@@ -93,7 +94,8 @@ func Env() *Config {
 			Port:         os.Getenv("API_PORT"),
 			Host:         os.Getenv("API_HOST"),
 			PasswordSalt: os.Getenv("API_PASSWORD_SALT"),
-			JWTSalt:      os.Getenv("API_JWT_SALT"),
+			AuthSecret:   os.Getenv("API_AUTH_SECRET"),
+			EmailSecret:  os.Getenv("API_EMAIL_SECRET"),
 		},
 		DB_CACHE: RedisConfig{
 			Username:  os.Getenv("REDIS_USER"),

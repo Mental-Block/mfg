@@ -7,13 +7,11 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 )
 
-type UserProfilesRequest struct {
-	Id string `json:"id" path:"user-id" example:"1" doc:"unique identifier"`
-}
+type UserProfilesRequest struct {}
 
 type UserProfilesResponse struct {
 	Body struct {
-		Users []UserProfile
+		Users []UserProfile 
 	}
 }
 
@@ -35,9 +33,9 @@ func (h *ServiceInject) getProfiles(api huma.API) {
 
 		users := make([]UserProfile, len(data))
 
-		for i, v := range users {
-			users[i].Id = v.Id
-			users[i].Username = v.Username
+		for i, v := range data {
+			users[i].Id = int(v.Id)
+			users[i].Username = string(v.Username)
 		}
 
 		resp := &UserProfilesResponse{}

@@ -16,8 +16,8 @@ import (
 	"github.com/server/internal/adapters/logger"
 	"github.com/server/internal/adapters/smtp"
 	"github.com/server/internal/adapters/store/postgres"
-	"github.com/server/internal/adapters/store/postgres/store"
 	"github.com/server/internal/adapters/store/redis"
+	"github.com/server/internal/adapters/store/store"
 	"github.com/server/internal/core/services"
 )
 
@@ -27,35 +27,39 @@ func main() {
 
 		logger.Set(cfg.ENV)
 
-		jwt := jwt.New(cfg.API.JWTSalt)
+		authJwt := jwt.New(cfg.API.AuthSecret)
+		emailJwt := jwt.New(cfg.API.EmailSecret)
 		argon := argon.New(cfg.API.PasswordSalt)
 
 		postgres, postgresErr := postgres.NewStore(context.Background(), cfg.DB.URL)
 		redis, redisErr := redis.NewStore(context.Background(), cfg.DB_CACHE.URL)
 		smtp := smtp.NewSMTP(cfg.SMTP.HostEmail, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
 
+		tokenStore := store.NewTokenStore(redis)
+		authStore := store.NewAuthStore(postgres, redis)
 		userStore := store.NewUserStore(postgres)
-		userAuthStore := store.NewUserAuthStore(postgres)
 		userProfileStore := store.NewUserProfileStore(postgres)
-
+		
 		authService := services.NewAuthService(
 			userStore,
-			userAuthStore,
-			smtp,
-			jwt,
+			authStore,
+			tokenStore,
 			argon,
+			smtp,
+			authJwt,
+			emailJwt,
 		)
-
+		
 		userService := services.NewUserService(
 			userStore,
 			userProfileStore,
 		)
 
-		server := api.NewAPI(api.Services{
-			AuthService:  authService,
-			UserService:  userService,
-			TokenService: jwt,
-		},
+		server := api.NewAPI(
+			api.Services{
+				AuthService:  authService,
+				UserService:  userService,
+			},
 			api.WithDocs("/docs"),
 			api.WithHost(cfg.API.Host),
 			api.WithPort(cfg.API.Port),

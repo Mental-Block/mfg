@@ -1,13 +1,10 @@
 -- Write your migrate up statements here
-CREATE TABLE IF NOT EXISTS {{.schema}}.auth
+CREATE TABLE IF NOT EXISTS public.auth
 (
     auth_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     password TEXT,
     email TEXT UNIQUE,
-    verified BOOLEAN NOT NULL DEFAULT false,
-    password_reset_token TEXT, -- delete in the future once redis is added
-    email_verification_token TEXT, -- delete in the future once redis is added
-    oauth BOOLEAN NOT NULL DEFAULT false, -- see if user is using oauth to login
+    oauth BOOLEAN NOT NULL DEFAULT false,
     updated_by TEXT,
     updated_dt TIMESTAMP,
     created_by TEXT NOT NULL DEFAULT SESSION_USER,
@@ -15,7 +12,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.auth
     PRIMARY KEY (auth_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.user
+CREATE TABLE IF NOT EXISTS public.user
 (
     user_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     auth_id INT NOT NULL,
@@ -27,7 +24,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.user
     PRIMARY KEY (user_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.package
+CREATE TABLE IF NOT EXISTS public.package
 (
     package_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -38,7 +35,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.package
     PRIMARY KEY (package_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.order
+CREATE TABLE IF NOT EXISTS public.order
 (
     order_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     board_id INT NOT NULL,
@@ -52,13 +49,13 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.order
     PRIMARY KEY (order_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.order_job
+CREATE TABLE IF NOT EXISTS public.order_job
 (
     order_id INT NOT NULL,
     job_id INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.machine
+CREATE TABLE IF NOT EXISTS public.machine
 (
     machine_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     line_id INT,
@@ -70,7 +67,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.machine
     PRIMARY KEY (machine_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.line
+CREATE TABLE IF NOT EXISTS public.line
 (
     line_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -81,13 +78,13 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.line
     PRIMARY KEY (line_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.line_job
+CREATE TABLE IF NOT EXISTS public.line_job
 (
     job_id INT NOT NULL,
     line_id INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.job
+CREATE TABLE IF NOT EXISTS public.job
 (
     job_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -98,7 +95,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.job
     PRIMARY KEY (job_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.feeder
+CREATE TABLE IF NOT EXISTS public.feeder
 (
     feeder_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     cart_id INT,
@@ -114,7 +111,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.feeder
 
 CREATE TYPE CartDirection AS ENUM ('left', 'right');
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.cart
+CREATE TABLE IF NOT EXISTS public.cart
 (
     cart_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     machine_id INT,
@@ -128,7 +125,7 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.cart
     PRIMARY KEY (cart_id)
 );
 
-CREATE TABLE IF NOT EXISTS {{.schema}}.board
+CREATE TABLE IF NOT EXISTS public.board
 (
     board_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
@@ -139,99 +136,100 @@ CREATE TABLE IF NOT EXISTS {{.schema}}.board
     PRIMARY KEY (board_id)
 );
 
-ALTER TABLE IF EXISTS {{.schema}}.cart
+ALTER TABLE IF EXISTS public.cart
     ADD CONSTRAINT fk_cart_machine
     FOREIGN KEY (machine_id)
-    REFERENCES {{.schema}}.machine (machine_id) MATCH SIMPLE
+    REFERENCES public.machine (machine_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.order
+ALTER TABLE IF EXISTS public.order
     ADD CONSTRAINT fk_order_board
     FOREIGN KEY (board_id)
-    REFERENCES {{.schema}}.board (board_id) MATCH SIMPLE
+    REFERENCES public.board (board_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.order_job
+ALTER TABLE IF EXISTS public.order_job
     ADD CONSTRAINT fk_order_job_order
     FOREIGN KEY (order_id)
-    REFERENCES {{.schema}}.order (order_id) MATCH SIMPLE
+    REFERENCES public.order (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.order_job
+ALTER TABLE IF EXISTS public.order_job
     ADD CONSTRAINT fk_order_job_job
     FOREIGN KEY (job_id)
-    REFERENCES {{.schema}}.job (job_id) MATCH SIMPLE
+    REFERENCES public.job (job_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.machine
+ALTER TABLE IF EXISTS public.machine
     ADD CONSTRAINT fk_machine_line
     FOREIGN KEY (line_id)
-    REFERENCES {{.schema}}.line (line_id) MATCH SIMPLE
+    REFERENCES public.line (line_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.line_job
+ALTER TABLE IF EXISTS public.line_job
     ADD CONSTRAINT fk_line_job_job
     FOREIGN KEY (job_id)
-    REFERENCES {{.schema}}.job (job_id) MATCH SIMPLE
+    REFERENCES public.job (job_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.line_job
+ALTER TABLE IF EXISTS public.line_job
     ADD CONSTRAINT fk_line_job_line
     FOREIGN KEY (line_id)
-    REFERENCES {{.schema}}.line (line_id) MATCH SIMPLE
+    REFERENCES public.line (line_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.feeder
+ALTER TABLE IF EXISTS public.feeder
     ADD CONSTRAINT fk_feeder_cart
     FOREIGN KEY (cart_id)
-    REFERENCES {{.schema}}.cart (cart_id) MATCH SIMPLE
+    REFERENCES public.cart (cart_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.feeder
+ALTER TABLE IF EXISTS public.feeder
     ADD CONSTRAINT fk_feeder_package 
     FOREIGN KEY (package_id)
-    REFERENCES {{.schema}}.package (package_id) MATCH SIMPLE
+    REFERENCES public.package (package_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
-ALTER TABLE IF EXISTS {{.schema}}.user
+ALTER TABLE IF EXISTS public.user
     ADD CONSTRAINT fk_user_auth
     FOREIGN KEY (auth_id)
-    REFERENCES {{.schema}}.auth (auth_id) MATCH SIMPLE
+    REFERENCES public.auth (auth_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
-    NOT VALID;
+	NOT VALID
+    DEFERRABLE INITIALLY DEFERRED;
 
 ---- create above / drop below ----
 
-DROP TABLE {{.schema}}.line_job; 
-DROP TABLE {{.schema}}.order_job;
-DROP TABLE {{.schema}}.order;
-DROP TABLE {{.schema}}.board;
-DROP TABLE {{.schema}}.feeder;
-DROP TABLE {{.schema}}.cart;
-DROP TABLE {{.schema}}.machine;
-DROP TABLE {{.schema}}.line;
-DROP TABLE {{.schema}}.job;
-DROP TABLE {{.schema}}.package;
-DROP TABLE {{.schema}}.user;
-DROP TABLE {{.schema}}.auth;
+DROP TABLE public.line_job; 
+DROP TABLE public.order_job;
+DROP TABLE public.order;
+DROP TABLE public.board;
+DROP TABLE public.feeder;
+DROP TABLE public.cart;
+DROP TABLE public.machine;
+DROP TABLE public.line;
+DROP TABLE public.job;
+DROP TABLE public.package;
+DROP TABLE public.user;
+DROP TABLE public.auth;
 
 DROP TYPE IF EXISTS CartDirection;

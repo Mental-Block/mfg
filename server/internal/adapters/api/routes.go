@@ -7,7 +7,7 @@ import (
 
 	"github.com/server/internal/adapters/api/v1/controllers/auth"
 	"github.com/server/internal/adapters/api/v1/controllers/user"
-	"github.com/server/internal/adapters/api/v1/middleware"
+	"github.com/server/internal/core/domain"
 )
 
 func (a *API) v1() {
@@ -31,6 +31,20 @@ func (a *API) v1() {
 			// 	},
 			// },
 		},
+		domain.RefreshTokenName: {
+			Description:  "long lived token to request auth tokens",
+			In: 		  "cookie",	
+			Type:         "http",
+			Scheme:       "bearer",
+			BearerFormat: "JWT",
+		},
+		domain.AuthTokenName: {
+			Description:  "short lived auth token with user roles",
+			In: 		  "cookie",
+			Type:         "http",
+			Scheme:       "bearer",
+			BearerFormat: "JWT",
+		},
 	}
 
 	humaBaseAPI := humachi.New(a.router.(*chi.Mux), humaConfig)
@@ -39,9 +53,6 @@ func (a *API) v1() {
 
 	v1 := huma.NewGroup(api, "/v1")
 
-	v1.UseMiddleware(middleware.CORS())
-
 	user.NewServiceInject(a.services.UserService, v1).Routes()
 	auth.NewServiceInject(a.services.AuthService, v1).Routes()
-
 }

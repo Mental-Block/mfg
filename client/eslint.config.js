@@ -1,7 +1,6 @@
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
-import pluginRouter from '@tanstack/eslint-plugin-router';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -15,7 +14,6 @@ export default [
     },
   },
   ...pluginQuery.configs.recommended['flat/recommended'],
-  ...pluginRouter.configs.recommended['flat/recommended'],
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
 ];
