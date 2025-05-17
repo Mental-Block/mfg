@@ -1,7 +1,14 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
+var (
+	ErrAuthNotFound = errors.New("no auth data found")
+    ErrTokenNotFound = errors.New("no token data found")
+)
 
 var (
 	RefreshTokenName = "mfg-refresh-token"
@@ -15,11 +22,18 @@ var (
 	EmailVerificationToken = time.Minute * 15
 )
 
-type AuthUser struct {
+type Auth struct {
+	Id 		 Id
+	Email    Email
+	Password Password
+	OAuth	 bool
+	Version  int
+}
+
+type CachedUser struct {
 	Username Username
 	Email    Email
 	Password Password
-	Token    string
+	Token 	 string
 }
-
 

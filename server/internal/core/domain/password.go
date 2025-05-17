@@ -9,12 +9,12 @@ type Password string
 
 var (
 	ErrIncorrectPassword         = errors.New("incorrect email or password")
-	ErrPaswordTooShort           = errors.New("password supplied is too short. Min 8 chars")
-	ErrPaswordTooLong            = errors.New("password supplied is too long. Max 64 chars")
-	ErrPaswordMustContainNumber  = errors.New("password supplied must contain a number")
-	ErrPaswordMustContainUpper   = errors.New("password supplied must contain a uppercase character")
-	ErrPaswordMustContainLower   = errors.New("password supplied must contain a lowercase character")
-	ErrPaswordMustContainSpecial = errors.New("password supplied must contain a special character")
+	ErrPaswordTooShort           = errors.New("min 8 characters")
+	ErrPaswordTooLong            = errors.New("max 64 characters")
+	ErrPaswordMustContainNumber  = errors.New("must contain a number")
+	ErrPaswordMustContainUpper   = errors.New("must contain a uppercase characters")
+	ErrPaswordMustContainLower   = errors.New("must contain a lowercase character")
+	ErrPaswordMustContainSpecial = errors.New("must contain a special character")
 )
 
 var (

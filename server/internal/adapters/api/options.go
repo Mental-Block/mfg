@@ -51,3 +51,9 @@ func WithHost(host string) APIOption {
 		a.host = host
 	}
 }
+
+func WithMiddlewares(middleware []func(next http.Handler) http.Handler) APIOption {
+	return func(a *API) {
+		a.middleware = middleware
+	}
+}

@@ -1,10 +1,8 @@
--- Write your migrate up statements here
 
-CREATE SCHEMA IF NOT EXISTS auth;
+ALTER TABLE public.auth 
+ADD version INT NOT NULL DEFAULT 1;
 
-ALTER TABLE public.auth SET SCHEMA auth;
-
-CREATE TABLE IF NOT EXISTS auth.resource
+CREATE TABLE IF NOT EXISTS public.resource
 (
     resource_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     name text NOT NULL,
@@ -15,7 +13,8 @@ CREATE TABLE IF NOT EXISTS auth.resource
     PRIMARY KEY (resource_id)
 );
 
-CREATE TABLE IF NOT EXISTS auth.permission
+
+CREATE TABLE IF NOT EXISTS public.permission
 (
     permission_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     name text NOT NULL,
@@ -26,7 +25,7 @@ CREATE TABLE IF NOT EXISTS auth.permission
     PRIMARY KEY (permission_id)
 );
 
-CREATE TABLE IF NOT EXISTS auth.role
+CREATE TABLE IF NOT EXISTS public.role
 (
     role_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     updated_by text,
@@ -36,7 +35,7 @@ CREATE TABLE IF NOT EXISTS auth.role
     PRIMARY KEY (role_id)
 );
 
-CREATE TABLE IF NOT EXISTS auth.role_resource_permission
+CREATE TABLE IF NOT EXISTS public.role_resource_permission
 (
     role_id integer NOT NULL,
     resource_permission_id integer NOT NULL,
@@ -44,15 +43,15 @@ CREATE TABLE IF NOT EXISTS auth.role_resource_permission
     assigned_dt timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS auth.auth_role
+CREATE TABLE IF NOT EXISTS public.user_role
 (
-    auth_id integer NOT NULL,
+    user_id integer NOT NULL,
     role_id integer NOT NULL,
     assigned_by text NOT NULL DEFAULT SESSION_USER,
     assigned_dt timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS auth.resource_permission
+CREATE TABLE IF NOT EXISTS public.resource_permission
 (
     resource_permission_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     resource_id integer NOT NULL,
@@ -64,65 +63,84 @@ CREATE TABLE IF NOT EXISTS auth.resource_permission
     PRIMARY KEY (resource_permission_id)
 );
 
-ALTER TABLE IF EXISTS auth.role_resource_permission
+CREATE TABLE IF NOT EXISTS public.user_resource_permission
+(
+    user_id integer NOT NULL,
+    resource_permission_id integer NOT NULL,
+    assigned_by text NOT NULL DEFAULT SESSION_USER,
+    assigned_dt timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE IF EXISTS public.role_resource_permission
     ADD CONSTRAINT fk_role_resource_permission FOREIGN KEY (role_id)
-    REFERENCES auth.role (role_id) MATCH SIMPLE
+    REFERENCES public.role (role_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS auth.role_resource_permission
+ALTER TABLE IF EXISTS public.role_resource_permission
     ADD CONSTRAINT fk_resource_permission_role FOREIGN KEY (resource_permission_id)
-    REFERENCES auth.resource_permission (resource_permission_id) MATCH SIMPLE
+    REFERENCES public.resource_permission (resource_permission_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS auth.auth_role
-    ADD CONSTRAINT fk_auth_role FOREIGN KEY (auth_id)
-    REFERENCES auth.auth (auth_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.user_role
+    ADD CONSTRAINT fk_user_role FOREIGN KEY (user_id)
+    REFERENCES public.user (user_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS auth.auth_role
-    ADD CONSTRAINT fk_role_auth FOREIGN KEY (role_id)
-    REFERENCES auth.role (role_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.user_role
+    ADD CONSTRAINT fk_role_user FOREIGN KEY (role_id)
+    REFERENCES public.role (role_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS auth.resource_permission
+ALTER TABLE IF EXISTS public.resource_permission
     ADD CONSTRAINT fk_resource_resource_permission FOREIGN KEY (resource_id)
-    REFERENCES auth.resource (resource_id) MATCH SIMPLE
+    REFERENCES public.resource (resource_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS auth.resource_permission
+ALTER TABLE IF EXISTS public.resource_permission
     ADD CONSTRAINT fk_permission_resource_permission FOREIGN KEY (permission_id)
-    REFERENCES auth.permission (permission_id) MATCH SIMPLE
+    REFERENCES public.permission (permission_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+
+ALTER TABLE IF EXISTS public.user_resource_permission
+    ADD CONSTRAINT fk_user_user_resource_permission FOREIGN KEY (user_id)
+    REFERENCES public.user (user_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+
+ALTER TABLE IF EXISTS public.user_resource_permission
+    ADD CONSTRAINT fk_resource_permission_user_resource_permission  FOREIGN KEY (resource_permission_id)
+    REFERENCES public.resource_permission (resource_permission_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 ---- create above / drop below ----
 
-ALTER TABLE auth.auth SET SCHEMA public;
+DROP TABLE public.user_role;
+DROP TABLE public.role_resource_permission;
+DROP TABLE public.user_resource_permission;
+DROP TABLE public.role;
+DROP TABLE public.resource_permission;
+DROP TABLE public.permission;
+DROP TABLE public.resource;
 
-DROP TABLE auth.resource;
-DROP TABLE auth.permission;
-DROP TABLE auth.role;
-DROP TABLE auth.role_resource_permission;
-DROP TABLE auth.auth_role;
-DROP TABLE auth.resource_permission;
-
-DROP SCHEMA auth;
-
--- Write your migrate down statements here. If this migration is irreversible
--- Then delete the separator line above.
+ALTER TABLE public.auth 
+DROP COLUMN version;

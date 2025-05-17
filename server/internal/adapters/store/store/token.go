@@ -4,7 +4,10 @@ import (
 	"context"
 	"time"
 
+	redisV9 "github.com/redis/go-redis/v9"
+	"github.com/server/internal"
 	"github.com/server/internal/adapters/store/redis"
+	"github.com/server/internal/core/domain"
 )
 
 type TokenStore struct {
@@ -17,23 +20,27 @@ func NewTokenStore(cache *redis.Store) *TokenStore {
 	}
 }
 
-func (s *TokenStore) Insert(ctx context.Context, key string, token string, duration time.Duration) error {
+func (rd *TokenStore) Insert(ctx context.Context, key string, token string, duration time.Duration) error {
 
-	err := s.cache.Set(ctx, key, []byte(token), duration) 
+	err := rd.cache.Set(ctx, key, []byte(token), duration) 
 
 	if (err != nil) {
-		return err
+		return internal.WrapErrorf(err,internal.ErrorCodeUnknown, err.Error()) 
 	}
 
 	return nil
 }
 
-func (s *TokenStore) Select(ctx context.Context, key string) (*string, error) {
+func (rd *TokenStore) Select(ctx context.Context, key string) (*string, error) {
 
-	result, err := s.cache.Get(ctx, key)
+	result, err := rd.cache.Get(ctx, key)
 
 	if (err != nil) {
-		return nil, err
+		if (err == redisV9.Nil) {
+			return nil, internal.NewErrorf(internal.ErrorCodeNotFound, domain.ErrTokenNotFound.Error())
+		}
+
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, err.Error()) 
 	}
 
 	res := string(result)
@@ -41,11 +48,16 @@ func (s *TokenStore) Select(ctx context.Context, key string) (*string, error) {
 	return &res, nil
 }
 
-func (s *TokenStore) Remove(ctx context.Context, key string) (error) {
-	 err := s.cache.Delete(ctx, key)
+func (rd *TokenStore) Delete(ctx context.Context, key string) (error) {
+
+	 err := rd.cache.Delete(ctx, key)
 
 	if (err != nil) {
-		return err
+		if (err == redisV9.Nil) {
+			return internal.NewErrorf(internal.ErrorCodeNotFound, domain.ErrTokenNotFound.Error())
+		}
+
+		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, err.Error()) 
 	}
 
 	return nil

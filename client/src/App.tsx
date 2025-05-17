@@ -1,115 +1,54 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Link, Route, Routes, Navigate } from 'react-router';
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import React, { Suspense, useEffect } from 'react';
+import { Flex, Skeleton, Spin, Typography } from 'antd';
 
-import { ConfigProvider } from 'antd';
+import { defaultUserState, UserState, useUserStore } from './store/useUserStore';
+import { useRefreshQuery } from './fetchRefresh';
+import Spinner from './components/Spinner';
+import Delayed from './components/Delayed';
 
-import { darkTheme, defualtTheme } from '@CSS/MFG';
-import { Layout, LayoutWSider } from '@Layout/Layout';
+import Error from 'src/pages/common/Error';
 
-import { menu as navMenu } from './navMenu';
-import { menu as jobMenu } from './jobSchedulerMenu';
-
-import { ConfirmAccount } from './Pages/Common/ConfirmAccount';
-import Login from './Pages/Common/Login';
-import { JobCreation } from './Pages/MFG/JobScheduler/Home';
-import { JobAdd, JobRemove, JobTransfer, JobEdit } from './Pages/MFG/JobScheduler/Job';
-import { NotifyProduction } from './Pages/MFG/JobScheduler/NotifyProduction';
-import { CommonParts, Feeders } from './Pages/MFG/JobScheduler/Optimizer-Analyzer';
-
-import { ResetAccount } from '@Pages/Common/ResetAccount';
-import { ChangeLog } from '@Pages/MFG/ChangeLog';
-import { NotFound } from '@Pages/Common/NotFound';
-import { API } from '@Shared/const';
-
-type Theme = 'default' | 'dark';
-
-const bob = () => {
-  return fetch(`${API}/auth/refresh/`, {
-    method: 'GET',
-    credentials: 'include',
-  });
-};
-
-const useRefreshTokenQuery = () => {
-  return useQuery({
-    queryKey: ['refresh'],
-    queryFn: () => {},
-  });
-};
-
-const LOGED_IN = false;
+import Routes from './routes';
 
 const App = () => {
-  const [themeType] = useState<Theme>('default');
+  const { data, isPending, error, isError } = useRefreshQuery();
+
+  const userStore = useUserStore();
+
+  useEffect(() => {
+    if (!isPending) {
+      const obj = new Object(data);
+
+      if (data != undefined && obj.hasOwnProperty('status') === false) {
+        userStore.SetState(data as UserState);
+      } else {
+        userStore.SetState(defaultUserState);
+      }
+    }
+  }, [isPending]);
+
+  if (isError && (error as any)?.status !== 401)
+    return (
+      <>
+        <Flex vertical justify={'center'} align={'center'} style={{ height: '100vh', background: 'rgba(0,0,0,1)' }}>
+          <Spinner delay={300} spinning={true} size={'large'} />
+          <Typography.Title style={{ marginTop: '1rem', color: 'white' }} level={4}>
+            Error: Trying To Recover
+          </Typography.Title>
+        </Flex>
+        {
+          <Delayed waitBeforeShow={3000}>
+            <Error {...(error as any)} />
+          </Delayed>
+        }
+      </>
+    );
 
   return (
-    <>
-      <ConfigProvider theme={themeType === 'default' ? defualtTheme : darkTheme}>
-        <Routes>{LOGED_IN ? LoggedInRoutes() : LoggedOutRoutes()}</Routes>
-      </ConfigProvider>
-    </>
+    <Suspense fallback={<Skeleton.Node active={true} style={{ height: '100vh', width: '100vw' }}></Skeleton.Node>}>
+      <Routes />
+    </Suspense>
   );
 };
 
 export default App;
-
-function LoggedOutRoutes() {
-  return (
-    <>
-      <Route path="confirm-account/:token" element={<ConfirmAccount />} />
-      <Route path="confirm-account-reset/:token" element={<ResetAccount />} />
-      <Route path="login" element={<Login />} />
-      <Route />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </>
-  );
-}
-
-function LoggedInRoutes() {
-  return (
-    <>
-      <Route
-        path="/"
-        element={<Layout headerSelectedMenuItemsKeys={[navMenu![0]?.key as any]} headerMenuItems={navMenu} />}
-      >
-        <Route path="" index element={<ChangeLog />} />
-        <Route path="*" index element={<NotFound />} />
-      </Route>
-
-      <Route
-        path="job-scheduler"
-        element={
-          <LayoutWSider
-            headerMenuItems={navMenu}
-            headerSelectedMenuItemsKeys={[navMenu![1]?.key as any]}
-            siderMenuItems={jobMenu}
-            siderSelectedMenuItemsKeys={[jobMenu![0]?.key as string]}
-          />
-        }
-      >
-        <Route index element={<JobCreation />} />
-        <Route path="notify-production" element={<NotifyProduction />} />
-
-        <Route path="job">
-          <Route path="add" element={<JobAdd />} />
-          <Route path="remove" element={<JobRemove />} />
-          <Route path="transfer" element={<JobTransfer />} />
-          <Route path="edit" element={<JobEdit />} />
-        </Route>
-
-        <Route path="line">
-          <Route path="add" element={<JobAdd />} />
-          <Route path="remove" element={<JobRemove />} />
-          <Route path="transfer" element={<JobTransfer />} />
-          <Route path="edit" element={<JobEdit />} />
-        </Route>
-
-        <Route path="optimizer-analyzer">
-          <Route path="common-parts" element={<CommonParts />} />
-          <Route path="feeders" element={<Feeders />} />
-        </Route>
-      </Route>
-    </>
-  );
-}

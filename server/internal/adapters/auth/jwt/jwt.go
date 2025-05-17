@@ -33,6 +33,7 @@ func (t *JWTConfig) Create(claims jwt.MapClaims) (*string, error) {
 
 func (t *JWTConfig) Parse(token string) (jwt.MapClaims, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		
 		return t.secret, nil
 	})
 

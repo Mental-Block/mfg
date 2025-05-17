@@ -6,32 +6,23 @@ import (
 	"github.com/server/internal/core/domain"
 )
 
-type PasswordService interface {
-	Hash(password domain.Password) domain.Password
-	Verify(password domain.Password, hash domain.Password) bool
-}
-
 type AuthService interface {
-	/* could probably break out token into seperate service */
-	NewAuthToken(id domain.Id, roles []string) (*string, error)
-    NewEmailVerificationToken(email domain.Email) (*string, error) 
-    NewPasswordResetToken(email domain.Email) (*string, error) 
-	NewRefreshToken(id domain.Id) (*string, error)
-
-	RegisterOAuth(ctx context.Context, email string) // Not implimented
+	Permission(ctx context.Context, token string) (*string, *string, *domain.UserAuth, error)
 	Register(ctx context.Context, email string, username string, password string) error
-	FinishRegister(ctx context.Context, token string) error
-	Verify(ctx context.Context, token string) (string, error)
+	RegisterFinish(ctx context.Context, token string) error
+	Login(ctx context.Context, email string, password string) (*string, *string, *domain.UserAuth, error) 
+	Verify(ctx context.Context, token string) (*string, error)
 	UpdatePassword(ctx context.Context, token string, password string) error
 	ResetPassword(ctx context.Context, email string) error
-	LoginOAuth(ctx context.Context) //Not implimented
-	Login(ctx context.Context, email string, password string) (*string, error) 
-	Logout(ctx context.Context, token string) error
 }
 
 type AuthStore interface {
 	UpdatePassword(ctx context.Context, email domain.Email, password domain.Password) error
-	SelectUser(ctx context.Context, email domain.Email) (*domain.AuthUser, error)
-	InsertUser(ctx context.Context, email domain.Email, password domain.Password, username domain.Username, verifiedToken string) error
-	RemoveUser(ctx context.Context, email domain.Email) error
+	Select(ctx context.Context, email domain.Email) (*domain.Auth, error)
+	SelectVersion(ctx context.Context, id domain.Id) (*int, error)
+	// auth_id on the user table will need to be NULL before this func will work or you'll get foriegn key error, you can do this on the userStore side.
+	Delete(ctx context.Context, id domain.Id) (*domain.Id, error)
+	SelectCache(ctx context.Context, email domain.Email) (*domain.CachedUser, error)
+	InsertCache(ctx context.Context, email domain.Email, password domain.Password, username domain.Username, token string) error
+	DeleteCache(ctx context.Context, email domain.Email) error
 }

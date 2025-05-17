@@ -15,10 +15,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js', '.css'],
     alias: {
       '@assets': path.resolve(__dirname, './assets'),
-      '@Layout': path.resolve(__dirname, './src/Layout'),
-      '@Pages': path.resolve(__dirname, './src/Pages'),
-      '@CSS': path.resolve(__dirname, './src/CSS'),
-      '@Shared': path.resolve(__dirname, './src/Shared'),
+      src: path.resolve(__dirname, './src'),
     },
   },
   module: {
@@ -41,6 +38,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, './src/index.html'),
+      favicon: './assets/images/favicon.ico',
       filename: 'index.html',
     }),
   ],

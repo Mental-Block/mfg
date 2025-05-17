@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.auth
 CREATE TABLE IF NOT EXISTS public.user
 (
     user_id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    auth_id INT NOT NULL,
+    auth_id INT,
     username TEXT NOT NULL CHECK (LENGTH(username) <= 30),
     updated_by TEXT,
     updated_dt TIMESTAMP,

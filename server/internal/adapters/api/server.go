@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -12,19 +11,23 @@ import (
 )
 
 type Services struct {
-	AuthService  ports.AuthService
-	UserService  ports.UserService
+	AuthService  		ports.AuthService
+	UserService  		ports.UserService
+	RoleService     	ports.RoleService
+	PermissionService 	ports.PermissionService
+	ResourceService 	ports.ResourceService
 }
 
 type API struct {
-	port     int
-	host     string
-	name     string
-	version  string
-	docsPath string
-	router   http.Handler
-	server   http.Server /* non configurable dependancy */
-	services Services    /* non configurable dependancy */
+	port     	int
+	host     	string
+	name     	string
+	version  	string
+	docsPath 	string
+	router   	http.Handler
+	middleware 	[]func(next http.Handler) http.Handler
+	services 	Services
+	Server   	http.Server     
 }
 
 func NewAPI(services Services, opts ...APIOption) *API {
@@ -41,11 +44,20 @@ func NewAPI(services Services, opts ...APIOption) *API {
 		applyOption(api)
 	}
 
+	var handler http.Handler = api.router
+	for _, applyMiddleware := range api.middleware {
+		handler = applyMiddleware(handler)
+	}
+
 	api.services = services
 
-	api.server = http.Server{
-		Addr:    fmt.Sprintf("%v:%v", api.host, api.port),
-		Handler: cors(api.router),
+	api.Server = http.Server{
+		Addr:    		  fmt.Sprintf("%v:%v", api.host, api.port),
+		Handler: 		  handler,
+		ReadTimeout:       1 * time.Second,
+		ReadHeaderTimeout: 1 * time.Second,
+		WriteTimeout:      1 * time.Second,
+		IdleTimeout:       1 * time.Second,
 	}
 
 	if _, ok := api.router.(*chi.Mux); ok && api.version == "1.0.0" {
@@ -55,19 +67,4 @@ func NewAPI(services Services, opts ...APIOption) *API {
 	}
 
 	return api
-}
-
-func (a *API) Run() error {
-	slog.Info(fmt.Sprintf("listening at: http://%v:%v%v", a.host, a.port, a.docsPath))
-	return a.server.ListenAndServe()
-}
-
-func (a *API) Stop() error {
-	ctx, cancel := context.WithTimeout(
-		context.Background(), time.Duration(3)*time.Second,
-	)
-
-	defer cancel()
-
-	return a.server.Shutdown(ctx)
 }

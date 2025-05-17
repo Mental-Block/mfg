@@ -16,8 +16,11 @@ func Set(enviroment env.ENVIROMENT) {
 	)
 
 	if env.Enviroment[enviroment] == "development" {
+
 		logger = slog.New(
-			slog.NewJSONHandler(os.Stderr, nil),
+			slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+				Level: slog.LevelDebug,
+			}),
 		)
 	}
 

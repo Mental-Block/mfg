@@ -22,11 +22,17 @@ var Enviroment = map[ENVIROMENT]string{
 }
 
 type Config struct {
+	GOOGLE	 GoogleConfig
 	ENV      ENVIROMENT
 	SMTP     SMTPConfig
 	DB       PostgresConfig
 	DB_CACHE RedisConfig
 	API      APIConfig
+}
+
+type GoogleConfig struct {
+	OAuthSecret 		string
+	OAuthClientId 		string
 }
 
 type RedisConfig struct {
@@ -46,11 +52,12 @@ type SMTPConfig struct {
 }
 
 type APIConfig struct {
-	Host         string
-	Port         string
-	PasswordSalt string
-	AuthSecret   string
-	EmailSecret  string
+	Host         	string
+	Port         	string
+	PasswordSalt 	string
+	AuthSecret   	string
+	EmailSecret  	string
+	RefreshSecret 	string
 }
 
 type PostgresConfig struct {
@@ -95,6 +102,7 @@ func Env() *Config {
 			Host:         os.Getenv("API_HOST"),
 			PasswordSalt: os.Getenv("API_PASSWORD_SALT"),
 			AuthSecret:   os.Getenv("API_AUTH_SECRET"),
+			RefreshSecret:os.Getenv("API_REFRESH_SECRET"),
 			EmailSecret:  os.Getenv("API_EMAIL_SECRET"),
 		},
 		DB_CACHE: RedisConfig{
@@ -112,6 +120,10 @@ func Env() *Config {
 			Port:      os.Getenv("POSTGRES_PORT"),
 			Host:      os.Getenv("POSTGRES_HOST"),
 			DefaultDB: os.Getenv("POSTGRES_DB"),
+		},
+		GOOGLE: GoogleConfig{
+			OAuthSecret: 	os.Getenv("GOOGLE_OAUTH_SECRET"),
+			OAuthClientId: 	os.Getenv("GOOGLE_OAUTH_CLIENT_ID"), 
 		},
 	}
 

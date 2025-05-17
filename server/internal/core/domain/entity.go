@@ -1,12 +1,9 @@
 package domain
 
 import (
-	"errors"
 	"os/user"
 	"time"
 )
-
-var ErrDataNotFound = errors.New("no data found")
 
 type Id int
 type CreatedBy string

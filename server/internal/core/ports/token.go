@@ -16,5 +16,5 @@ type TokenService interface {
 type TokenStore interface {
 	Select(ctx context.Context, key string) (*string, error)
 	Insert(ctx context.Context, key string, token string, duration time.Duration) error
-	Remove(ctx context.Context, key string) error
+	Delete(ctx context.Context, key string) error
 }

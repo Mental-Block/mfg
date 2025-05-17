@@ -6,8 +6,12 @@ Install dependancies
 
 `npm i`
 
-### Bob
-
 start application
 
 `npm start`
+
+## TODO
+
+- Code split componets
+- Add Tests
+- Refactor
