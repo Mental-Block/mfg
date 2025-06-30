@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/util"
 )
 
 type RegisterFinishRequest struct {
@@ -26,20 +25,16 @@ func (s *AuthHandler) RegisterFinish(api huma.API) {
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *VerifyRequest) (*RegisterFinishResponse, error) {
 
-		if req.Token == "" {
-			return nil, huma.Error400BadRequest("token can't be empty")
-		}
+		// err := s.authService.FinishRegisterFlow(ctx, req.Token)
 
-		err := s.authService.RegisterFinish(ctx, req.Token)
+		// if err != nil  {
+		// 	return nil, util.HumaError(err)
+		// }
 
-		if err != nil  {
-			return nil, util.HumaError(err)
-		}
+		// resp := &RegisterFinishResponse{
+		// 	Body: true,
+		// }
 
-		resp := &RegisterFinishResponse{
-			Body: true,
-		}
-
-		return resp, nil
+		return nil, nil
 	})
 }

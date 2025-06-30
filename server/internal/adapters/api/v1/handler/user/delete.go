@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/server/internal/adapters/api/v1/util"
@@ -15,11 +14,11 @@ type DeleteUserRequest struct {
 
 type DeleteUserResponse struct {
 	Body struct {
-		Id int `json:"id" example:"1" doc:"unique identifier"`
+		Id string `json:"id" example:"1" doc:"unique identifier"`
 	}
 }
 
-func (s *UserHandler) deleteUser(api huma.API) {
+func (s *UserHandler) delete(api huma.API) {
 	huma.Register(api, huma.Operation{
 		Tags:          []string{"user"},
 		OperationID:   "delete-user",
@@ -32,20 +31,15 @@ func (s *UserHandler) deleteUser(api huma.API) {
 			return nil, huma.Error400BadRequest("user-id can't be empty")
 		}
 
-		userId, err := strconv.Atoi(req.Id)
-
-		if err != nil {
-			return nil, huma.Error400BadRequest("user-id has to be a number")
-		}
-
-		_, err = s.userService.Remove(ctx, userId)
+		id, err := s.userService.Remove(ctx, req.Id)
 
 		if err != nil  {
 			return nil, util.HumaError(err)
 		}
 
 		resp := &DeleteUserResponse{}
-		resp.Body.Id = userId
+		
+		resp.Body.Id = id
 
 		return resp, nil
 	})

@@ -3,21 +3,24 @@ import React, { useEffect, useState } from 'react';
 import { Menu, Layout, theme as antdTheme, ConfigProvider, ThemeConfig } from 'antd';
 
 import './sider.css';
-import { useSiderMenu } from './useSiderMenu';
 import { useThemeStore } from 'src/store/useThemeStore';
 import { findKey } from 'src/utils/findkey';
 import { useLocation } from 'react-router';
+import { ItemType, MenuItemType } from 'antd/es/menu/interface';
 
-export const Sider: React.FC = () => {
+export interface SiderProps extends React.PropsWithChildren {
+  menuItems?: ItemType<MenuItemType>[];
+}
+
+export const Sider: React.FC<SiderProps> = ({ menuItems }) => {
   const theme = useThemeStore();
   const { token } = antdTheme.useToken();
   const [collapsedValue, setCollapsed] = useState<boolean>(true);
   const [keys, setKey] = useState<string[] | undefined>(undefined);
   const { pathname } = useLocation();
-  const items = useSiderMenu();
 
   useEffect(() => {
-    const key = findKey(items!, pathname);
+    const key = findKey(menuItems!, pathname);
     setKey(key);
   }, []);
 
@@ -58,7 +61,7 @@ export const Sider: React.FC = () => {
             bottom: 116,
           }}
           selectedKeys={keys}
-          items={items}
+          items={menuItems}
         />
       </Layout.Sider>
     </ConfigProvider>

@@ -6,7 +6,7 @@ export const useVerifyQuery = (token: string | undefined) => {
     retry: false,
     retryOnMount: false,
     refetchInterval: false,
-    queryKey: ['verify'],
+    queryKey: ['verify', token],
     queryFn: () => fetchVerify(token),
     enabled: !!token,
   });

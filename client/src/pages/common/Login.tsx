@@ -11,8 +11,11 @@ import BackgroundImage from 'src/components/BackgroundImage';
 import { ForgotPasswordFormModal } from 'src/features/authentication/components/ForgotPasswordFormModal';
 import { LoginForm } from 'src/features/authentication/components/LoginForm';
 import { RegisterFormModal } from 'src/features/authentication/components/RegisterFormModal';
+import { TITLE_PREFIX } from 'src/utils/const';
+import { useTitle } from 'src/hooks/useTitle';
 
 const Login = () => {
+  useTitle('Login', TITLE_PREFIX);
   const [registerVisible, setRegister] = useState(false);
   const [forgotPasswordVisible, setForgotPassword] = useState(false);
 

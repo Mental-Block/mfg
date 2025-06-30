@@ -1,29 +1,41 @@
 import React from 'react';
-import { Navigate, RouteProps } from 'react-router';
+import { Navigate, Outlet, RouteProps } from 'react-router';
+import NotFound from 'src/components/NotFound';
+import DashboardLayout from 'src/pages/dashboard';
+import JWTGuard from './guard/Jwt';
 
-import { useUserStore } from 'src/store/useUserStore';
-
+/* guards */
+const RefreshGuard = React.lazy(() => import('./guard/Refresh'));
 const PublicGuard = React.lazy(() => import('./guard/Public'));
 const ProtectedGuard = React.lazy(() => import('./guard/Protected'));
 
-const Layout = React.lazy(() => import('src/layout/Layout/Layout'));
-const LayoutWSider = React.lazy(() => import('src/layout/Layout/LayoutWSider'));
-
+/* common */
 const ResetAccount = React.lazy(() => import('src/pages/common/ResetAccount'));
 const ConfirmAccount = React.lazy(() => import('src/pages/common/ConfirmAccount'));
-
 const Login = React.lazy(() => import('src/pages/common/Login'));
-const NotFound = React.lazy(() => import('src/pages/common/NotFound'));
+//const NotFound = React.lazy(() => import('src/pages/common/NotFound'));
 
-const ChangeLog = React.lazy(() => import('src/pages/dashboard/ChangeLog'));
-const NotifyProduction = React.lazy(() => import('src/pages/dashboard/jobscheduler/NotifyProduction'));
-const JobCreation = React.lazy(() => import('src/pages/dashboard/jobscheduler/NotifyProduction'));
-const JobAdd = React.lazy(() => import('src/pages/dashboard/jobscheduler/Job/Add'));
-const JobRemove = React.lazy(() => import('src/pages/dashboard/jobscheduler/Job/Remove'));
-const JobTransfer = React.lazy(() => import('src/pages/dashboard/jobscheduler/Job/Transfer'));
-const JobEdit = React.lazy(() => import('src/pages/dashboard/jobscheduler/Job/Edit'));
-const Feeders = React.lazy(() => import('src/pages/dashboard/jobscheduler/Optimizer-Analyzer/Feeders'));
-const CommonParts = React.lazy(() => import('src/pages/dashboard/jobscheduler/Optimizer-Analyzer/CommonParts'));
+/* dashboard */
+const DashboardNotFound = React.lazy(() => import('src/pages/dashboard/NotFound'));
+
+/* change log */
+const ChangeLogLayout = React.lazy(() => import('src/pages/dashboard/ChangeLog'));
+const ChangeLog = React.lazy(() => import('src/pages/dashboard/ChangeLog/ChangeLog'));
+
+/* job scheduler */
+const JobSchedulerLayout = React.lazy(() => import('src/pages/dashboard/JobScheduler'));
+const NotifyProduction = React.lazy(() => import('src/pages/dashboard/JobScheduler/NotifyProduction'));
+const JobCreation = React.lazy(() => import('src/pages/dashboard/JobScheduler/NotifyProduction'));
+const JobAdd = React.lazy(() => import('src/pages/dashboard/JobScheduler/Job/Add'));
+const JobRemove = React.lazy(() => import('src/pages/dashboard/JobScheduler/Job/Remove'));
+const JobTransfer = React.lazy(() => import('src/pages/dashboard/JobScheduler/Job/Transfer'));
+const JobEdit = React.lazy(() => import('src/pages/dashboard/JobScheduler/Job/Edit'));
+const Feeders = React.lazy(() => import('src/pages/dashboard/JobScheduler/Optimizer-Analyzer/Feeders'));
+const CommonParts = React.lazy(() => import('src/pages/dashboard/JobScheduler/Optimizer-Analyzer/CommonParts'));
+
+/* user policy */
+const AuthLayout = React.lazy(() => import('src/pages/dashboard/auth'));
+const Resources = React.lazy(() => import('src/pages/dashboard/auth/Resources'));
 
 export type CustomRouteProps = RouteProps & {
   path: string; // overide make required
@@ -31,146 +43,168 @@ export type CustomRouteProps = RouteProps & {
   routes?: CustomRouteProps[];
 };
 
-export const useRoutes = () => {
-  const { loggedIn } = useUserStore();
-
-  const routes: CustomRouteProps[] = [
-    {
-      isAnimated: true,
-      path: 'confirm-account/:token',
-      element: <ConfirmAccount />,
-    },
-    {
-      isAnimated: true,
-      path: 'confirm-account-reset/:token',
-      element: <ResetAccount />,
-    },
-    {
-      path: '',
-      element: <PublicGuard restricted={loggedIn} />,
-      routes: [
-        {
-          path: 'login',
-          element: <Login />,
-        },
-        {
-          isAnimated: true,
-          path: '',
-          element: <Navigate to="/login" replace />,
-        },
-        {
-          isAnimated: true,
-          path: '*',
-          element: <Navigate to="/login" replace />,
-        },
-      ],
-    },
-    {
-      path: 'dashboard',
-      element: <ProtectedGuard isAuthenticated={loggedIn} isRestricted={false} />,
-      routes: [
-        {
-          path: '',
-          element: <Layout />,
-          routes: [
-            {
-              isAnimated: true,
-              index: true,
-              path: '',
-              element: <ChangeLog />,
-            },
-            {
-              isAnimated: true,
-              path: '*',
-              element: <NotFound />,
-            },
-          ],
-        },
-        {
-          path: 'job-scheduler',
-          element: <LayoutWSider />,
-          routes: [
-            {
-              isAnimated: true,
-              index: true,
-              path: '',
-              element: <JobCreation />,
-            },
-            {
-              isAnimated: true,
-              path: 'notify-production',
-              element: <NotifyProduction />,
-            },
-            {
-              path: 'job',
-              routes: [
-                {
-                  isAnimated: true,
-                  path: 'add',
-                  element: <JobAdd />,
-                },
-                {
-                  isAnimated: true,
-                  path: 'remove',
-                  element: <JobRemove />,
-                },
-                {
-                  isAnimated: true,
-                  path: 'transfer',
-                  element: <JobTransfer />,
-                },
-                {
-                  isAnimated: true,
-                  path: 'edit',
-                  element: <JobEdit />,
-                },
-              ],
-            },
-            {
-              path: 'line',
-              routes: [
-                {
-                  isAnimated: true,
-                  path: 'add',
-                  element: null,
-                },
-                {
-                  isAnimated: true,
-                  path: 'remove',
-                  element: null,
-                },
-                {
-                  isAnimated: true,
-                  path: 'transfer',
-                  element: null,
-                },
-                {
-                  isAnimated: true,
-                  path: 'edit',
-                  element: null,
-                },
-              ],
-            },
-            {
-              path: 'optimizer-analyzer',
-              routes: [
-                {
-                  isAnimated: true,
-                  path: 'common-parts',
-                  element: <CommonParts />,
-                },
-                {
-                  isAnimated: true,
-                  path: 'feeders',
-                  element: <Feeders />,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ];
-
-  return routes;
-};
+export const routes: CustomRouteProps[] = [
+  {
+    path: 'account',
+    element: <Outlet />,
+    routes: [
+      {
+        path: ':token',
+        element: <JWTGuard />,
+        routes: [
+          {
+            path: 'confirm',
+            element: <ConfirmAccount />,
+          },
+          {
+            path: 'reset',
+            element: <ResetAccount />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '',
+    element: <RefreshGuard />,
+    routes: [
+      {
+        path: '',
+        element: <PublicGuard />,
+        routes: [
+          {
+            path: 'login',
+            index: true,
+            element: <Login />,
+          },
+          {
+            isAnimated: true,
+            path: '',
+            element: <Navigate to="/login" replace />,
+          },
+          {
+            isAnimated: true,
+            path: '*',
+            element: <Navigate to="/login" replace />,
+          },
+        ],
+      },
+      {
+        path: 'dashboard',
+        element: <ProtectedGuard />,
+        routes: [
+          {
+            path: '',
+            element: <ChangeLogLayout />,
+            routes: [
+              {
+                isAnimated: true,
+                index: true,
+                path: '',
+                element: <ChangeLog />,
+              },
+              {
+                isAnimated: true,
+                path: '*',
+                element: <DashboardNotFound />,
+              },
+            ],
+          },
+          {
+            path: 'job-scheduler',
+            element: <JobSchedulerLayout />,
+            routes: [
+              {
+                isAnimated: true,
+                index: true,
+                path: '',
+                element: <JobCreation />,
+              },
+              {
+                isAnimated: true,
+                path: 'notify-production',
+                element: <NotifyProduction />,
+              },
+              {
+                path: 'job',
+                routes: [
+                  {
+                    isAnimated: true,
+                    path: 'add',
+                    element: <JobAdd />,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'remove',
+                    element: <JobRemove />,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'transfer',
+                    element: <JobTransfer />,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'edit',
+                    element: <JobEdit />,
+                  },
+                ],
+              },
+              {
+                path: 'line',
+                routes: [
+                  {
+                    isAnimated: true,
+                    path: 'add',
+                    element: null,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'remove',
+                    element: null,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'transfer',
+                    element: null,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'edit',
+                    element: null,
+                  },
+                ],
+              },
+              {
+                path: 'optimizer-analyzer',
+                routes: [
+                  {
+                    isAnimated: true,
+                    path: 'common-parts',
+                    element: <CommonParts />,
+                  },
+                  {
+                    isAnimated: true,
+                    path: 'feeders',
+                    element: <Feeders />,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'auth',
+            element: <AuthLayout />,
+            routes: [
+              {
+                isAnimated: true,
+                path: 'resource',
+                element: <Resources />,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];

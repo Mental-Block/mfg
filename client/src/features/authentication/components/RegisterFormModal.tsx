@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Form, Input, Result } from 'antd';
+import { Button, Form, Input, Result, theme, Typography } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 
-import { Header, Footer, Modal } from 'src/components/Form';
-import type { ModalProps } from 'src/components/Form';
+import { Header, Footer, Modal } from 'src/features/authentication/components/Form';
+import type { ModalProps } from 'src/features/authentication/components/Form';
 
 import { useWatchEmail, DEBOUNCE_TIME } from '../hooks/useWatchEmail';
 import { useRegisterMutation } from '../hooks/useRegisterMutation';
@@ -22,7 +22,7 @@ interface FormValues {
 export function RegisterFormModal(props: ModalProps) {
   const [showConfirmation, setConfirmation] = useState(false);
   const [form] = useForm();
-
+  const { token } = theme.useToken();
   const uniqEmailRule = useWatchEmail();
   const mutation = useRegisterMutation();
 
@@ -79,21 +79,27 @@ export function RegisterFormModal(props: ModalProps) {
           <Header title="Sign up" subTitle="Create an account to get started." />
           <Form form={form} name="register_form" onFinish={onFinish} layout="vertical" requiredMark="optional">
             <Form.Item hasFeedback name="username" rules={USERNAME_RULES}>
-              <Input prefix={<UserOutlined />} placeholder="Username" />
+              <Input style={{ height: 32 }} prefix={<UserOutlined />} placeholder="Username" />
             </Form.Item>
             <Form.Item hasFeedback name="email" validateDebounce={DEBOUNCE_TIME} rules={uniqEmailRule}>
-              <Input prefix={<MailOutlined />} placeholder="Email" />
+              <Input style={{ height: 32 }} prefix={<MailOutlined />} placeholder="Email" />
             </Form.Item>
             <Form.Item hasFeedback name="password" rules={PASSWORD_RULES}>
-              <Input.Password prefix={<LockOutlined />} type="password" placeholder="Password" />
+              <Input.Password style={{ height: 32 }} prefix={<LockOutlined />} type="password" placeholder="Password" />
             </Form.Item>
             <Form.Item hasFeedback name="confirm" rules={CONFIRM_PASSWORD_RULES}>
-              <Input.Password prefix={<LockOutlined />} type="confirm" placeholder="Confirm Password" />
+              <Input.Password
+                style={{ height: 32 }}
+                prefix={<LockOutlined />}
+                type="confirm"
+                placeholder="Confirm Password"
+              />
             </Form.Item>
             <Form.Item>
               <Button
                 style={{
                   marginTop: '0.25rem',
+                  height: 32,
                 }}
                 block
                 type="primary"
@@ -104,10 +110,13 @@ export function RegisterFormModal(props: ModalProps) {
               </Button>
             </Form.Item>
           </Form>
-          <Footer title="Already have an account?">
-            <Button type="link" style={{ padding: '0', marginLeft: '5px' }} onClick={() => props.close()}>
-              Sign in
-            </Button>
+          <Footer>
+            <div style={{ marginTop: '1.5rem' }}>
+              <Typography.Text style={{ color: token.colorTextSecondary }}>Already have an account?</Typography.Text>
+              <Button type="link" style={{ padding: '0', marginLeft: '5px' }} onClick={() => props.close()}>
+                Sign in
+              </Button>
+            </div>
           </Footer>
         </>
       )}

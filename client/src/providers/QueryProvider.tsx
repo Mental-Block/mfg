@@ -5,7 +5,7 @@ const baseQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
+      retryDelay: (attempt) => Math.pow(2, attempt) * 2000, // exponential backoff
       staleTime: 30000,
       refetchOnWindowFocus: false,
       refetchOnMount: true,
@@ -15,7 +15,7 @@ const baseQueryClient = new QueryClient({
     },
     mutations: {
       retry: 0,
-      retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
+      retryDelay: (attempt) => Math.pow(2, attempt) * 2000,
     },
   },
 });

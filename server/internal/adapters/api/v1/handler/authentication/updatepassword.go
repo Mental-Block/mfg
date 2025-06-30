@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/util"
 )
 
 type UpdatePasswordRequest struct {
@@ -31,15 +30,16 @@ func (s *AuthHandler) UpdatePassword(api huma.API) {
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
 
-		err := s.authService.UpdatePassword(ctx, req.Token, req.Body.Password)
+		
+		// err := s.authService.FinishResetPasswordFlow(ctx, req.Token, req.Body.Password)
 
-		if err != nil  {
-			return nil, util.HumaError(err)
-		}
+		// if err != nil  {
+		// 	return nil, util.HumaError(err)
+		// }
 
-		resp := &UpdatePasswordResponse{}
-		resp.Body.ok = true
+		// resp := &UpdatePasswordResponse{}
+		// resp.Body.ok = true
 
-		return resp, nil
+		return nil, nil
 	})
 }

@@ -1,0 +1,51 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: "debug"
+  otlp:
+    endpoint: "tempo:4317"
+    compression: "none"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: ["otlp"]
+      processors: ["batch"]
+      exporters: ["otlp"]
+  telemetry:
+    logs:
+      level: "info"
+    metrics:
+      address: ":9090"
+# receivers:
+#   prometheus:
+#     config:
+#       scrape_configs:
+#         - job_name: "prometheus"
+#           metrics_path: "/api/v1/metrics"
+#           scrape_interval: "15s"
+#           static_configs:
+#             - targets: ["http://prometheus:9090"] # ["${AUTHZED_DEDICATED_HOST}"]
+#           basic_auth:
+#             username: username #${PROMETHEUS_USERNAME}  yamllint disable-line rule:quoted-strings
+#             password: password #${PROMETHEUS_PASSWORD} yamllint disable-line rule:quoted-strings
+# exporters:
+#   otlp:
+#     endpoint: "http://otel-collector:4317" # ${OTEL_EXPORTER_OTLP_ENDPOINT} yamllint disable-line rule:quoted-strings
+#     headers:
+#       x-honeycomb-team: ${OTEL_EXPORTER_OTLP_HEADERS} # yamllint disable-line rule:quoted-strings
+# service:
+#   pipelines:
+#     metrics:
+#       receivers: ["prometheus"]
+#       exporters: ["otlp"]

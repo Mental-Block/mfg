@@ -1,16 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { Button, Checkbox, Form, Input } from 'antd';
-import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Divider, Flex, Form, Input, theme, Typography } from 'antd';
+import { LockOutlined, MailOutlined, GoogleOutlined, GithubOutlined } from '@ant-design/icons';
 
 import { useUserStore } from 'src/store/useUserStore';
-import { Card, Footer, Header } from 'src/components/Form';
+import { Card, Footer, Header } from 'src/features/authentication/components/Form';
 import { genericServerErrorHandler } from 'src/utils/error';
 
 import { PASSWORD_RULES, EMAIL_RULES } from '../rules';
 import { useLoginMutation } from '../hooks/useLoginMutation';
-
+<GithubOutlined />;
 interface LoginFormProps {
   openSignupModal: () => void;
   openPasswordModal: () => void;
@@ -25,8 +25,8 @@ interface FormValues {
 export function LoginForm(props: LoginFormProps) {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const userState = useUserStore();
-
+  const { token } = theme.useToken();
+  const setUser = useUserStore((state) => state.SetState);
   const mutation = useLoginMutation();
 
   const onFinish = async (values: FormValues) => {
@@ -42,7 +42,7 @@ export function LoginForm(props: LoginFormProps) {
         password: values.password,
       })
       .then((data) => {
-        userState.SetState({ ...data, loggedIn: true });
+        setUser({ ...data, loggedIn: true });
         navigate('/', { replace: true });
       })
       .catch((err) => {
@@ -95,10 +95,10 @@ export function LoginForm(props: LoginFormProps) {
         requiredMark="optional"
       >
         <Form.Item<string> name="email" rules={EMAIL_RULES}>
-          <Input prefix={<MailOutlined />} placeholder="Email" />
+          <Input style={{ height: 32 }} prefix={<MailOutlined />} placeholder="Email" />
         </Form.Item>
         <Form.Item<string> name="password" rules={PASSWORD_RULES}>
-          <Input.Password prefix={<LockOutlined />} type="password" placeholder="Password" />
+          <Input.Password style={{ height: 32 }} prefix={<LockOutlined />} type="password" placeholder="Password" />
         </Form.Item>
         <Form.Item>
           <Form.Item<boolean> name="remember" valuePropName="checked" noStyle>
@@ -109,15 +109,42 @@ export function LoginForm(props: LoginFormProps) {
           </Button>
         </Form.Item>
         <Form.Item style={{ marginBottom: '0px' }}>
-          <Button loading={mutation.isPending} block={true} type="primary" htmlType="submit">
+          <Button style={{ height: 32 }} loading={mutation.isPending} block={true} type="primary" htmlType="submit">
             Log in
           </Button>
         </Form.Item>
       </Form>
-      <Footer title="Don't have an account?">
-        <Button type="link" style={styles.link} onClick={() => props.openSignupModal()}>
-          Sign up now
-        </Button>
+      <Footer>
+        <Divider style={{ margin: '0.5rem 0' }} orientation="center" variant="solid">
+          <Typography.Text style={{ color: token.colorTextSecondary }}>or</Typography.Text>
+        </Divider>
+        <Flex vertical>
+          <Button
+            style={{ height: 32, borderRadius: 0, background: '#4285F4' }}
+            icon={<GoogleOutlined style={{ marginTop: '6px' }} />}
+            type="primary"
+          >
+            Continue With Google
+          </Button>
+          <Button
+            style={{
+              height: 32,
+              borderRadius: 0,
+              marginTop: '0.75rem',
+              background: '#333',
+            }}
+            icon={<GithubOutlined />}
+            type="primary"
+          >
+            Continue With Github
+          </Button>
+        </Flex>
+        <div style={{ marginTop: '1.5rem' }}>
+          <Typography.Text style={{ color: token.colorTextSecondary }}>Don't have an account?</Typography.Text>
+          <Button type="link" style={styles.link} onClick={() => props.openSignupModal()}>
+            Sign up now
+          </Button>
+        </div>
       </Footer>
     </Card>
   );

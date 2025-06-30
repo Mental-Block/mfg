@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/util"
 )
 
 type VerifyRequest struct {
@@ -29,19 +28,15 @@ func (s *AuthHandler) Verify(api huma.API) {
 		
 	}, func(ctx context.Context, req *VerifyRequest) (*VerifyResponse, error) {
 
-		if req.Token == "" {
-			return nil, huma.Error400BadRequest("token can't be empty")
-		}
+		// _, err := s.authService.VerifyEmailToken(ctx, req.Token)
 
-		_, err := s.authService.Verify(ctx, req.Token)
+		// if err != nil  {
+		// 	return nil, util.HumaError(err)
+		// }
 
-		if err != nil  {
-			return nil, util.HumaError(err)
-		}
+		// resp := &VerifyResponse{}
+		// resp.Body.ok = true
 
-		resp := &VerifyResponse{}
-		resp.Body.ok = true
-
-		return resp, nil
+		return nil, nil
 	})
 }

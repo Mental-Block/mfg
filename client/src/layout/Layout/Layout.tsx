@@ -2,9 +2,13 @@ import React from 'react';
 import { Outlet } from 'react-router';
 import { Layout as AntLayout, theme } from 'antd';
 
-import { Footer, Header } from '../index';
+import { Footer, Header, HeaderProps } from '../index';
 
-const Layout: React.FC = () => {
+interface LayoutProps extends React.PropsWithChildren {
+  header: HeaderProps;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children, header }) => {
   const { token } = theme.useToken();
 
   return (
@@ -13,7 +17,7 @@ const Layout: React.FC = () => {
         minHeight: '100vh',
       }}
     >
-      <Header />
+      <Header {...header} />
       <AntLayout.Content
         style={{
           display: 'flex',
@@ -27,7 +31,7 @@ const Layout: React.FC = () => {
             width: '100%',
           }}
         >
-          <Outlet />
+          {children != null ? children : <Outlet />}
         </div>
       </AntLayout.Content>
       <Footer />

@@ -13,8 +13,8 @@ export const Footer = () => {
   return (
     <Layout.Footer>
       <Flex justify="center" align="center" vertical>
-        <NavLink to="/">
-          <Logo />
+        <NavLink to="/dashboard">
+          <Logo width={'auto'} height={'22px'} />
         </NavLink>
         <Space>
           <p

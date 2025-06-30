@@ -1,14 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
+import { useUserStore } from 'src/store/useUserStore';
 
-interface PublicGuardProps extends React.PropsWithChildren {
-  restricted: boolean;
-}
-
-const PublicGuard: React.FC<PublicGuardProps> = ({ restricted }) => {
+const PublicGuard: React.FC = () => {
+  const loggedIn = useUserStore((state) => state.loggedIn);
   const location = useLocation();
 
-  if (restricted) {
+  if (loggedIn) {
     return <Navigate to="/dashboard" replace state={{ from: location }} />;
   }
 

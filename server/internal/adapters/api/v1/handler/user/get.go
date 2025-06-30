@@ -3,10 +3,8 @@ package user
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/dto"
 	"github.com/server/internal/adapters/api/v1/util"
 )
 
@@ -15,10 +13,10 @@ type UserRequest struct {
 }
 
 type UserResponse struct {
-	Body *dto.User
+	Body *User
 }
 
-func (h *UserHandler) getUser(api huma.API) {
+func (h *UserHandler) get(api huma.API) {
 	huma.Register(api, huma.Operation{
 		Tags:          []string{"user"},
 		OperationID:   "get-user",
@@ -31,23 +29,21 @@ func (h *UserHandler) getUser(api huma.API) {
 		if input.Id == "" {
 			return nil, huma.Error400BadRequest("user-id can't be empty")
 		}
-
-		id, err := strconv.Atoi(input.Id)
-
-		if err != nil {
-			return nil, huma.Error400BadRequest("user-id has to be a number")
-		}
-
-		data, err := h.userService.Get(ctx, id)
+		
+		user, err := h.userService.Get(ctx, input.Id)
 
 		if err != nil  {
 			return nil, util.HumaError(err)
 		}
 
 		resp := &UserResponse{
-			Body: &dto.User{
-				Id:       int(data.Id),
-				Username: string(data.Username),
+			Body: &User{
+				Id: user.Id,
+				Username: user.Username,
+				Active: user.Active,
+				Title: user.Title,
+				Avatar: user.Title,
+				Metadata: user.Metadata,
 			},
 		}
 

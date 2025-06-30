@@ -2,172 +2,321 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
+	"fmt"
 	"log"
-	"log/slog"
+	"net"
 	"net/http"
-	"runtime"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 	"time"
 
-	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
-	"github.com/danielgtaylor/huma/v2/humacli"
-	"github.com/go-chi/chi/v5"
+	"github.com/server/config"
+
+	"github.com/server/pkg/logger"
+	"github.com/server/pkg/mailer"
+	"github.com/server/pkg/utils"
 
 	"github.com/server/internal/adapters/api"
-	"github.com/server/internal/adapters/auth/argon"
-	"github.com/server/internal/adapters/auth/jwt"
-	"github.com/server/internal/adapters/env"
-	"github.com/server/internal/adapters/logger"
-	"github.com/server/internal/adapters/smtp"
+	"github.com/server/internal/adapters/bootstrap"
+	"github.com/server/internal/adapters/metrics"
+	"github.com/server/internal/adapters/store/blob"
 	"github.com/server/internal/adapters/store/postgres"
+	"github.com/server/internal/adapters/store/postgres/tx"
 	"github.com/server/internal/adapters/store/redis"
-	"github.com/server/internal/adapters/store/store"
-	"github.com/server/internal/core/services"
+	"github.com/server/internal/adapters/store/spicedb"
+
+	auth_store "github.com/server/internal/adapters/store/postgres/auth"
+	namespace_store "github.com/server/internal/adapters/store/postgres/namespace"
+	permission_store "github.com/server/internal/adapters/store/postgres/permission"
+	relation_store "github.com/server/internal/adapters/store/postgres/relation"
+	role_store "github.com/server/internal/adapters/store/postgres/role"
+	serviceuser_store "github.com/server/internal/adapters/store/postgres/serviceuser"
+	user_store "github.com/server/internal/adapters/store/postgres/user"
+	session_store "github.com/server/internal/adapters/store/redis"
+
+	"github.com/server/internal/core/auth"
+	"github.com/server/internal/core/auth/session"
+	"github.com/server/internal/core/auth/token"
+	"github.com/server/internal/core/namespace"
+	"github.com/server/internal/core/permission"
+	"github.com/server/internal/core/relation"
+	"github.com/server/internal/core/role"
+	"github.com/server/internal/core/serviceuser"
+	"github.com/server/internal/core/user"
 )
 
 func main() {
-	cli := humacli.New(func(hooks humacli.Hooks, options *struct{}) {
+	var conf string
 
-		cfg := env.Env()
-		
-		// Primary Adapters
-		// token
-		authJwt := jwt.New(cfg.API.AuthSecret)
-		emailJwt := jwt.New(cfg.API.EmailSecret)
-		refreshJwt := jwt.New(cfg.API.RefreshSecret)
+	flag.StringVar(&conf, "config", "../infra/api/config.yaml", "filename")
+	flag.Parse()
 
-		// password
-		argon := argon.New(64 * 1024, 1,uint8(runtime.NumCPU()), 16, 32)
-		
-		// RDBMS
-		postgres, postgresErr := postgres.NewStore(context.Background(), cfg.DB.URL)
-		
-		// In-Memory NoSQL (cache)
-		redis, redisErr := redis.NewStore(context.Background(), cfg.DB_CACHE.URL)
-		
-		// data stores/repos
-		tokenStore := store.NewTokenStore(redis)
+	cfg, err := config.LoadConfig(conf)
 
-		authStore := store.NewAuthStore(postgres, redis)
-		authUserStore := store.NewAuthUserStore(postgres)
+	if (err != nil) {
+		log.Fatal(err)
+	}
 
-		userStore := store.NewUserStore(postgres)
-		//userAuthStore := store.NewUserAuthStore(postgres)
+	errC, err := run(cfg)
 
-		roleStore := store.NewRoleStore(postgres)
-		permissionStore := store.NewPermissionStore(postgres)
-		resourceStore := store.NewResourceStore(postgres)
+	if err != nil {
+		log.Fatalf("Couldn't run: %s", err)
+	}
 
-		
-		// SMTP
-		smtp := smtp.NewSMTP(cfg.SMTP.HostEmail, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
+	if err := <-errC; err != nil {
+		log.Fatalf("Error while running: %s", err)
+	}
+}
 
-		// Secondary Adapters
-		authService := services.NewAuthService(
-			authUserStore,
-			userStore,
-			authStore,
-			tokenStore,
-			argon,
-			smtp,
-			refreshJwt,
-			authJwt,
-			emailJwt,
-		)
-		userService := services.NewUserService(userStore)
-		roleService := services.NewRoleService(roleStore)
-		permissionService := services.NewPermissionService(permissionStore)
-		resourceService := services.NewResourceService(resourceStore)
-		
-		//logging middleware
-		logger.Set(cfg.ENV)
+func run(cfg *config.Config) (<-chan error, error) {
+	logr := logger.Set(cfg.Logger)
 
-		logging := func(h http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				slog.Info(
-					r.Method,
-					slog.Time("time", time.Now()),
-					slog.String("url", r.URL.String()),
-				)
+	errC := make(chan error, 1)
+	
+	ctx, stop := signal.NotifyContext(context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	)
 
-				h.ServeHTTP(w, r)
-			})
-		}
- 
-		//cors middleware
-		cors := func(h http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { 
-				w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
-				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
-				w.Header().Set("Access-Control-Allow-Credentials", "true")
-				
-				if r.Method == http.MethodOptions && r.Header.Get("Origin") != "" && r.Header.Get("Access-Control-Request-Method") != "" {
-					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-					w.Header().Set("Access-Control-Max-Age", "600")
+	// RDBMS database
+	postgres, err := postgres.NewStore(ctx, cfg.DB)
 
-					w.WriteHeader(204)
-					return
-				}
+	if err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "postgres.NewStore")
+	}
 
-				w.Header().Add("Vary", "Origin")
-				h.ServeHTTP(w, r)
-			})
-		}
+	// In-memory database
+	redis, err := redis.NewStore(ctx, cfg.DBCache)
 
-		// REST API
-		server := api.NewAPI(
-			api.Services{
-				AuthService:  authService,
-				UserService:  userService,
-				RoleService:  roleService,
-				PermissionService: permissionService,
-				ResourceService: resourceService,
-			},
-			api.WithMiddlewares([]func(next http.Handler) http.Handler{logging, cors}),
-			api.WithDocs("/docs"),
-			api.WithHost(cfg.API.Host),
-			api.WithPort(cfg.API.Port),
-			api.WithVersion("1.0.0"),
-			api.WithName("MFG"),
-			api.WithRouter(chi.NewMux()),
-		)	
-		
-		// runs a go routine and SIGTERM process under the hood... so when services start and stop they shutdown gracefully
-		hooks.OnStart(func() {
-			log.Print("listening at: http://", server.Server.Addr)
+	if err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "redis.NewStore")
+	}
 
-			if redisErr != nil {
-				log.Print("failed to init cache database: %w\n", redisErr)
-			}
+	// blob/file storage
+	blobFS, err := blob.NewStore(ctx, cfg.BlobFS)
+	
+	if err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "blob.NewStore")
+	}
+	
+	// schema, authorization DSL file location for migration
+	resourceStorage := blob.NewResourceStore(logr, blobFS)
+	
+	if err := resourceStorage.InitCache(ctx, time.Minute * 2); err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "resourceStorage.InitCache")
+	}
 
-			if postgresErr != nil {
-				log.Print("failed to init database: %w\n", postgresErr)
-			}
+	// metrics collection for Spicedb/authzed
+	stdLibpostgres := postgres.PgxToStdLib()
+	_, promMetrics := metrics.Initalize(stdLibpostgres, "metrics")
 
-			if err := server.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				log.Print("failed to init web server: %w\n", err)
-			}
-		})
+	// Spicedb/authzed GRPC client
+	spicedb, err := spicedb.NewClient(cfg.SpiceDB, promMetrics)
 
-		hooks.OnStop(func() {
-			log.Print("shutdown signal recived")
-				
+	if err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "spicedb.NewClient")
+	}
+	
+	// build app dependanicies getting ready to serve
+	services := buildDependancies(
+		cfg,
+		logr,
+		postgres,
+		redis,
+		spicedb,
+		resourceStorage,
+	)
+
+	// migrate schemas
+	if err = services.BootstrapService.MigrateSchema(ctx); err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "services.BootstrapService.MigrateSchema")
+	}
+
+	//  migrate roles
+	if err = services.BootstrapService.MigrateRoles(ctx); err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "services.BootstrapService.MigrateRoles")
+	}
+
+	//  promote users
+	if err = services.BootstrapService.MakeSuperUsers(ctx); err != nil {
+		return nil, utils.WrapErrorf(err, utils.ErrorCodeUnknown, "services.BootstrapService.MakeSuperUsers")
+	}
+	
+	// start API
+	api := api.Serve(
+		*services.ApiServices,
+		api.WithMiddlewares([]func(next http.Handler) http.Handler{
+			api.LoggerMiddleWare(logr), 
+			api.CORSMiddleWare(cfg.Api.Server.CorsConfig),
+		}),
+		api.WithDocUI(cfg.Api.Server.DocUI),
+		api.WithDocPath(cfg.Api.Server.DocsPath),
+		api.WithHost(cfg.Api.Server.Host),
+		api.WithPort(strconv.Itoa(cfg.Api.Server.Port)),
+		api.WithVersion(cfg.Api.Server.Version),
+		api.WithName(cfg.Api.Server.Name),
+		api.WithEnivorment(cfg.Enviroment),
+	)	
+
+	// if any service critically fails... flush logger and gracefully shutdown services
+	go func() {
+		<-ctx.Done()
+
+		logr.Info("Shutdown signal received")
+
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+
+		defer func() {
+			err = logr.Sync()
+
 			postgres.Close()
+			_ = redis.Close()
+			_ = resourceStorage.Close()
+			_ = spicedb.Close()
+			_ = api.Server.Close()
+			
+			stop()
+			cancel()
+			close(errC)
+		}()
 
-			if err := redis.Close(); err != nil {
-				log.Print("cache db couldn't close connection gracefully: %w\n", err)
-			}
+		api.Server.SetKeepAlivesEnabled(false)
 
-			ctx, cancel := context.WithTimeout(
-				context.Background(), time.Duration(3)*time.Second,
-			)
+		if err := api.Server.Shutdown(ctxTimeout); err != nil { 
+			errC <- err
+		}
 
-			defer cancel()
+		logr.Info("Shutdown completed")
+	}()
 
-			if err := server.Server.Shutdown(ctx); err != nil {
-				log.Print("web could not shut down gracefully: %w\n", err)
-			}
-		})
-	})
+	go func() {
+		uri := net.JoinHostPort(cfg.Api.Server.Host, strconv.Itoa(cfg.Api.Server.Port)) + cfg.Api.Server.DocsPath
 
-	cli.Run()
+		logr.Info(fmt.Sprintf("Listening and serving: %v", uri))
+
+		if err := api.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errC <- err
+		}
+	}()
+
+	return errC, nil
+}
+
+
+type Dependancies struct {
+	ApiServices  		*api.Services
+	BootstrapService 	*bootstrap.Service    
+}
+
+func buildDependancies(
+	cfg   		*config.Config,
+	logger      logger.Logger,
+	dbCon 		*postgres.Store,
+	dbcacheCon	*redis.Store,
+	spicedbCon  *spicedb.SpiceDB,
+	resourceBlob *blob.ResourceStore,
+) (*Dependancies) {	
+	/* 
+		At runtime this will inject the needed stores for transactions.  
+		Prefer to keep transactions within the store repository if posible if the context makes sense. 
+		This pattern should be used sparingly as it is complex and very easy to introduce bugs.
+
+		Article explaining GO anti patterns: https://threedots.tech/post/database-transactions-in-go/
+		Github repo of transaction strategies: https://github.com/ThreeDotsLabs/go-web-app-antipatterns
+		Prefered strategy when using pgx driver: https://github.com/MarioCarrion/videos/tree/5dbfad345ff8e39c6539ce4f51aea5db582ed59a/2023/transaction-in-context/internal/postgresql
+	*/
+	txProvider := tx.NewTXProvider(dbCon)
+
+	//mailer
+	mailer := mailer.NewDialer(cfg.Api.Mailer)
+
+	// authorization relations & schemas 
+	authzRelationStore := spicedb.NewRelationStore(
+		spicedbCon, 
+		cfg.SpiceDB.Consistency, 
+		cfg.SpiceDB.CheckTrace,
+		logger,
+	)
+
+	// base relation - app specific and global
+	relationStore := relation_store.NewRelationStore(dbCon)
+	relationService := relation.NewRelationService(
+		relationStore, 
+		authzRelationStore,
+	)
+
+	nameSpaceStore := namespace_store.NewNamespaceStore(dbCon)
+	nameSpaceService := namespace.NewService(nameSpaceStore)
+
+	permissionStore := permission_store.NewPermissionStore(dbCon)
+	permissionService := permission.NewService(permissionStore)
+
+	roleStore := role_store.NewRoleStore(dbCon)
+	roleService := role.NewRoleService(roleStore, relationService, permissionService)
+
+	userStore := user_store.NewUserStore(dbCon)
+	userService := user.NewUserService(userStore, relationService)
+
+	//authentication
+	authTxConsumer := tx.NewAuthTxConsumer(txProvider)
+	authStore := auth_store.NewAuthStore(dbCon)
+
+	sessionStore := session_store.NewSessionStore(dbcacheCon)
+	sessionService := session.NewSessionService(cfg.Api.Auth.Session, authStore, sessionStore)
+
+	tokenService := token.NewTokenService(cfg.Api.Auth.Token)
+
+	flowStore := redis.NewFlowStore(dbcacheCon)
+
+	serviceUserStore := serviceuser_store.NewServiceUserStore(dbCon)
+	serviceUserCredsStore := serviceuser_store.NewServiceUserCredentialStore(dbCon)
+	serviceUserService := serviceuser.NewServiceUserService(
+		cfg.Api.Auth.Password.Params, 
+		serviceUserStore, 
+		serviceUserCredsStore, 
+		relationService,
+	)
+	
+	authService := auth.NewAuthService(
+		cfg.Api.Auth,
+		authStore,
+		flowStore,
+		authTxConsumer,
+		mailer,
+		tokenService,
+		serviceUserService,
+		sessionService,
+	)
+	
+	// schema relation - contains relations files for migrations
+	resourceRelationSchemastore := blob.NewSchemaStore(resourceBlob.Bucket)
+	
+	// current schemas - in spicedb
+	authzSchemaStore := spicedb.NewSchemaStore(spicedbCon)
+
+	// bootstrap 
+	// - migrate authz DSL files and app specific relations, role, permissions and schemas
+	// - create any super users if specified
+	bootstrapService := bootstrap.NewBootstrapService(
+		cfg.Bootstrap,
+		resourceRelationSchemastore,
+		nameSpaceService,
+		roleService,
+		permissionService,
+		userService,
+		authzSchemaStore,
+	)
+	
+	return &Dependancies{
+		ApiServices: &api.Services{
+			AuthService:  authService,
+			UserService:  userService,
+		},
+		BootstrapService: bootstrapService,
+	}
 }

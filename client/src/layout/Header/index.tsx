@@ -1,34 +1,37 @@
+import './header.css';
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { Menu, Layout, ConfigProvider, theme as antdTheme, Button, ThemeConfig } from 'antd';
-import { ItemType } from 'antd/es/menu/interface';
 
 import { useThemeStore } from 'src/store/useThemeStore';
 
-//@ts-ignore
-import logo from '@assets/logo.png';
+import { useWindowResize } from 'src/hooks/useWindowResize';
 
-import { useWindowResize } from '../../hooks/useWindowResize';
-import './header.css';
-import { useNavMenu } from './useNavMenu';
 import { Logo } from 'src/components/Logo';
 import { findKey } from 'src/utils/findkey';
+import { ItemType, MenuItemType } from 'antd/es/menu/interface';
 
-export const Header: React.FC = () => {
+export interface HeaderProps extends React.PropsWithChildren {
+  menuItems?: ItemType<MenuItemType>[];
+}
+
+export const Header: React.FC<HeaderProps> = ({ menuItems }) => {
   const { token } = antdTheme.useToken();
   const [isPassed] = useWindowResize('md', false);
   const [isVisible, toggleMenu] = useState<boolean>(false);
-  const items = useNavMenu();
   const theme = useThemeStore();
   const { pathname } = useLocation();
   const [keys, setKey] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
     if (pathname == '/dashboard') {
-      const key = findKey(items!, pathname);
+      const key = findKey(menuItems!, pathname);
       setKey(key);
     } else {
-      const key = findKey(items!, pathname, false, /^\/dashboard\/job-scheduler.*?$/);
+      const param = pathname.split('/')[2];
+      const pattern = new RegExp('^\/dashboard\/' + param + '.*?$');
+
+      const key = findKey(menuItems!, pathname, false, pattern);
       if (key != undefined && key?.length >= 0) {
         setKey(key);
       }
@@ -58,18 +61,18 @@ export const Header: React.FC = () => {
           boxShadow: `2px 4px 6px rgba(0,0,0,0.25)`,
         }}
       >
-        <NavLink to="/">
-          <Logo />
-        </NavLink>
+        <div style={{ marginRight: '0.5rem' }}>
+          <NavLink to="/dashboard">
+            <Logo width={'auto'} height={'22px'} />
+          </NavLink>
+        </div>
         <Menu
           style={
             isPassed === false
               ? {
-                  width: '100%',
+                  width: '38rem',
                   justifyContent: 'end',
                   position: 'relative',
-                  left: 0,
-                  top: 0,
                   transition: 'none',
                   borderBottom: '1px solid rgba(5,5,5,0.06)',
                 }
@@ -89,8 +92,8 @@ export const Header: React.FC = () => {
           }}
           selectedKeys={keys}
           mode={isPassed === false ? 'horizontal' : 'inline'}
-          items={items}
-        ></Menu>
+          items={menuItems}
+        />
 
         <Button
           style={{ display: isPassed === false ? 'none' : 'inline-block', padding: '0px' }}

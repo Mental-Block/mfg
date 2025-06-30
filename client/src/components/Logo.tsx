@@ -3,6 +3,6 @@ import logo from '@assets/images/logo.png';
 
 import React from 'react';
 
-export const Logo = () => {
-  return <img src={logo} width={90} alt="logo" />;
+export const Logo = ({ width, height }: { width: number | string; height: number | string }) => {
+  return <img src={logo} width={width} height={height} alt="logo" />;
 };

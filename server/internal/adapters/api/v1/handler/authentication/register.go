@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/util"
 )
 
 type RegisterRequest struct {
@@ -28,22 +27,26 @@ func (s *AuthHandler) Register(api huma.API) {
 		Path:          "/register/",
 		Method:        http.MethodPost,
 		DefaultStatus: http.StatusOK,
-	}, func(ctx context.Context, req *RegisterRequest) (*RegisterResponse, error) {
-
-		err := s.authService.Register(
-			ctx,
-			req.Body.Email,
-			req.Body.Username,
-			req.Body.Password,
-		)
-
-		if err != nil  {
-			return nil, util.HumaError(err)
-		}
 		
-		resp := &RegisterResponse{}
-		resp.Body = true
+	}, func(ctx context.Context, req *RegisterRequest) (*RegisterResponse, error) {
+		
+		// err := s.authService.StartRegisterFlow(
+		// 	ctx,
+		// 	req.Body.Username,
+		// 	req.Body.Email,
+		// 	req.Body.Password,
+		// )
 
-		return resp, nil
+		// if err != nil  {
+		// 	return nil, util.HumaError(err)
+		// }
+		
+		// resp := &RegisterResponse{}
+
+		// resp.Body = true
+
+		// return resp, nil
+	
+		return nil, nil
 	})
 }

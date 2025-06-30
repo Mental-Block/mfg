@@ -1,15 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
+import { useUserStore } from 'src/store/useUserStore';
 
-interface ProtectedGuardProps extends React.PropsWithChildren {
-  isAuthenticated: boolean;
-  isRestricted: boolean;
-}
-
-const ProtectedGuard: React.FC<ProtectedGuardProps> = ({ isAuthenticated, isRestricted }) => {
+const ProtectedGuard: React.FC = () => {
+  const loggedIn = useUserStore((state) => state.loggedIn);
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  if (!loggedIn) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

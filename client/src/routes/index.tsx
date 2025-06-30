@@ -3,7 +3,7 @@ import { Route, Routes, useLocation } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 
 import { motion } from 'framer-motion';
-import { CustomRouteProps, useRoutes } from './routes';
+import { CustomRouteProps, routes } from './routes';
 
 const RouteWithSubRoutes = ({ routes, isAnimated, element, ...rest }: CustomRouteProps): React.ReactElement | null => {
   if (isAnimated === true) {
@@ -36,7 +36,6 @@ const RouteWithSubRoutes = ({ routes, isAnimated, element, ...rest }: CustomRout
 
 const Index = () => {
   const location = useLocation();
-  const routes = useRoutes();
 
   return (
     <Routes location={location} key={location.key}>

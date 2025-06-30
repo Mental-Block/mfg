@@ -6,31 +6,29 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal"
+	"github.com/server/pkg/utils"
 )
 
 func HumaError(err error) error {
-	var code int = http.StatusInternalServerError
+	code := http.StatusInternalServerError
 	errMsg := "internal server error"
 
-	var ierr *internal.Error
-	if !errors.As(err, &ierr) {
-		errMsg = "internal server error"
-	} else {
+	var ierr *utils.Error
+	if errors.As(err, &ierr) {
 		switch ierr.Code() {
-		case internal.ErrorCodeNotFound:
+		case utils.ErrorCodeNotFound:
 			code = http.StatusNotFound
 			errMsg = ierr.Top().Error()
 
-		case internal.ErrorCodeInvalidArgument:
+		case utils.ErrorCodeInvalidArgument:
 			code = http.StatusBadRequest
 			errMsg = ierr.Top().Error()
 
-		case internal.ErrorCodeNotAuthorized:
+		case utils.ErrorCodeNotAuthorized:
 			code = http.StatusUnauthorized
 			errMsg = ierr.Top().Error()
 
-		case internal.ErrorCodeUnknown:
+		case utils.ErrorCodeUnknown:
 			fallthrough
 		default:
 			slog.Debug("error", "service error:", ierr.Error())

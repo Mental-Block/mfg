@@ -3,13 +3,9 @@ package authentication
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/dto"
-	"github.com/server/internal/adapters/api/v1/util"
-	"github.com/server/internal/adapters/env"
-	"github.com/server/internal/core/domain"
+	"github.com/server/internal/adapters/api/v1/handler/user"
 )
 
 type LoginRequest struct {
@@ -21,7 +17,7 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	SetCookie []*http.Cookie `header:"Set-Cookie"`
-	Body *dto.Authorization
+	Body *user.User
 }
 
 func (s *AuthHandler) Login(api huma.API) {
@@ -34,60 +30,83 @@ func (s *AuthHandler) Login(api huma.API) {
 		Method:        http.MethodPost,
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
-		
-		rToken, aToken, auth, err := s.authService.Login(
-			ctx,
-			req.Body.Email,
-			req.Body.Password,
-		)
 
-		if err != nil  {
-			return nil, util.HumaError(err)
-		}
+		// startFlowReq := &domain.StartFlowReq{
+		// 	Reason: "login",
+		// 	Strategy: "password",
+		// 	Email:  req.Body.Email,
+		// 	Payload: map[string]string {
+		// 		"password": req.Body.Password,
+		// 	},
+		// 	CallBackUrl: "",
+		// 	ReturnToURL: "",
+		// }
 
-		cfg := env.Env()
+		// startflowResp, err := s.authService.StartFlow(ctx, startFlowReq)
 
-		cookie := http.Cookie{
-			Path: "/",
-		}
+		// if (err != nil) {
+		// 	return nil, util.HumaError(err)
+		// }
 
-		if cfg.ENV == env.Development {
-			cookie.Secure = false	
-			cookie.HttpOnly = false
-			cookie.SameSite = http.SameSiteLaxMode
-		}
+		// finishFlowReq := &domain.FinishFlowReq{
+		// 	State: startflowResp.State,
+		// 	Strategy: startflowResp.Flow.Strategy,
+		// 	Reason: startflowResp.Flow.Reason,
+		// }
 
-		if cfg.ENV == env.Production || cfg.ENV == env.Test {
-			cookie.Domain = cfg.SMTP.Host
-			cookie.HttpOnly = true
-			cookie.Secure = true
-			cookie.SameSite = http.SameSiteStrictMode
-		}
+		// _, err := s.authService.FinishFlow(ctx, finishFlowReq)
 
-		refreshCookie := cookie
-		authCookie := cookie
+		// if (err != nil) {
+		// 	return nil, util.HumaError(err)
+		// }
 
-		refreshCookie.Name = domain.RefreshTokenName;
-		refreshCookie.Value = *rToken;
-		refreshCookie.Expires = time.Now().Add(domain.RefreshTokenDuration)
+			
 
-		authCookie.Name = domain.AuthTokenName;
-		authCookie.Value = *aToken;
-		authCookie.Expires = time.Now().Add(domain.AuthTokenDuration)
 
-		resp := &LoginResponse{}
+		//s.authService.BuildToken(ctx, )
 
-		resp.SetCookie = []*http.Cookie{
-			&refreshCookie,	
-			&authCookie,
-		}
 
-		resp.Body = &dto.Authorization{
-			Id: int(auth.Id),
-			Username: string(auth.Username),
-			Roles: auth.Roles,
-		}
+		// cookie := http.Cookie{
+		// 	Secure: false,	
+		// 	HttpOnly: false,
+		// 	SameSite: http.SameSiteLaxMode,
+		// 	Path: "/",
+		// }
 
-		return resp, nil
+		// if s.enviroment == env.Production || s.enviroment == env.Test {
+		// 	cookie.Domain = s.host
+		// 	cookie.HttpOnly = true
+		// 	cookie.Secure = true
+		// 	cookie.SameSite = http.SameSiteStrictMode
+		// }
+
+		// refreshCookie := cookie
+		// authCookie := cookie
+
+		// refreshCookie.Name = domain.RefreshTokenName;
+		// refreshCookie.Value = refreshToken;
+		// refreshCookie.Expires = time.Now().Add(domain.RefreshTokenDuration)
+
+		// authCookie.Name = domain.AuthTokenName;
+		// authCookie.Value =  authToken;
+		// authCookie.Expires = time.Now().Add(domain.PermissionTokenDuration)
+
+		// resp := &LoginResponse{}
+
+		// resp.SetCookie = []*http.Cookie{
+		// 	&refreshCookie,	
+		// 	&authCookie,
+		// }
+
+		// resp.Body = &user.User{
+		// 	Id: loginUser.Id,
+		// 	Username: loginUser.Username,
+		// 	Title: loginUser.Title,
+		// 	Active: loginUser.Active,
+		// 	Avatar: loginUser.Avatar,
+		// 	Metadata: loginUser.Metadata,
+		// }
+
+		return nil, nil
 	})
 }

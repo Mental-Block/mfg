@@ -3,10 +3,17 @@ import { Outlet } from 'react-router';
 
 import { Layout, theme } from 'antd';
 
-import { Footer, Header, Sider } from '../index';
 import { useWindowResize } from 'src/hooks/useWindowResize';
 
-const LayoutWSider: React.FC = () => {
+import type { HeaderProps, SiderProps } from '../index';
+import { Footer, Header, Sider } from '../index';
+
+interface LayoutWSiderProps extends React.PropsWithChildren {
+  header: HeaderProps;
+  sider: SiderProps;
+}
+
+const LayoutWSider: React.FC<LayoutWSiderProps> = ({ children, header, sider }) => {
   const { token } = theme.useToken();
   const [isPassed] = useWindowResize('md', false);
 
@@ -16,9 +23,9 @@ const LayoutWSider: React.FC = () => {
         minHeight: '100vh',
       }}
     >
-      <Header />
+      <Header {...header} />
       <Layout hasSider>
-        <Sider />
+        <Sider {...sider} />
         <Layout>
           <Layout.Content>
             <div
@@ -28,7 +35,7 @@ const LayoutWSider: React.FC = () => {
                 padding: isPassed === false ? '1rem' : 0,
               }}
             >
-              <Outlet />
+              {children != null ? children : <Outlet />}
             </div>
           </Layout.Content>
         </Layout>

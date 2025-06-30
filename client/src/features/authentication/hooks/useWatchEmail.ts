@@ -1,4 +1,3 @@
-import { ErrorMessage } from 'src/domain/error';
 import { useValidEmailMutation } from './useValidEmailMutation';
 
 export { DEBOUNCE_TIME } from './useValidEmailMutation';

@@ -2,18 +2,24 @@ package authentication
 
 import (
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/core/ports"
+	"github.com/server/config/env"
+	"github.com/server/internal/core/auth"
 )
 
-type AuthHandler struct {
-	authService ports.AuthService 
-	userService ports.UserService
+type AuthHandler struct {	
+	host 	   string
+	enviroment env.ENVIROMENT
+	authService auth.AuthService 
 }
 
-func NewAuthHandler(auth ports.AuthService, user ports.UserService) *AuthHandler {
+func NewAuthHandler(
+	host 	   string, 
+	enviroment env.ENVIROMENT,
+	auth auth.AuthService, 
+	) *AuthHandler {
 	return &AuthHandler{
+		enviroment: enviroment,
 		authService: auth,
-		userService: user,
 	}
 }
 

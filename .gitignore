@@ -3,3 +3,6 @@ start.sh
 .env
 
 /server/assets
+
+/infra/api/config.yaml
+/infra/api/jwk.txt

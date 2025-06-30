@@ -6,7 +6,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/server/internal/adapters/api/v1/util"
-	"github.com/server/internal/core/domain"
 )
 
 type IsTakenRequest struct {
@@ -29,20 +28,16 @@ func (h *AuthHandler) EmailTaken(api huma.API) {
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *IsTakenRequest) (*IsTakenResponse, error) {
 
-		_, err := h.userService.GetUserByEmail(ctx, req.Body.Email)
-		
-		resp := &IsTakenResponse{}
+		isTaken, err := h.authService.IsEmailTaken(ctx, req.Body.Email)
 		
 		if (err != nil) {
-			if (err.Error() == domain.ErrUserNotFound.Error()) {
-				resp.Body = false
-				return resp, nil
-			}
-
 			return nil, util.HumaError(err)
 		}
 
-		resp.Body = true
+		resp := &IsTakenResponse{
+			Body: isTaken,
+		}
+
 		return resp, nil
 	})
 }

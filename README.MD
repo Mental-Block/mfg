@@ -4,15 +4,16 @@ A group of utilities that are common to the manufacturing industry.
 
 ## Getting Started
 
-### Prerequisite
+### Requirements
 
 - Docker version 28+
 - Docker Compose version v2.33.1+
 
 ## Set up
 
-- Generate docker container from image `docker-compose up`
-- If you want to run just an individual part of the project go to `README.MD` located in each.
+- Provide `.env` file with variables
+- Run `source init.sh` and thats it
+- Go to project `README.MD` located in each directory for documentation
 
 ## Architecture
 

@@ -3,29 +3,29 @@ import { devtools, persist } from 'zustand/middleware';
 
 import type { User } from 'src/domain/user';
 
-export interface UserState extends User {
+export interface UserStore extends User {
   loggedIn: boolean;
-}
-
-export const defaultUserState: UserState = {
-  id: 0,
-  username: '',
-  roles: [],
-  loggedIn: false,
-};
-
-export interface UserStore extends UserState {
+  SetLogout: () => void;
+  SetLogedIn: () => void;
   SetState: (state: UserState) => void;
-  SetLoggedIn: (state: boolean) => void;
 }
+
+type UserState = Omit<UserStore, 'SetState' | 'SetLogout' | 'SetLogedIn'>;
+
+export const defualtUserState: UserState = {
+  id: 0,
+  username: 'dsa',
+  loggedIn: true,
+};
 
 export const useUserStore = create<UserStore>()(
   devtools(
     persist(
       (set) => ({
-        ...defaultUserState,
+        ...defualtUserState,
         SetState: (state: UserState) => set(state),
-        SetLoggedIn: (value: boolean) => set((state) => ({ ...state, LoggedIn: value })),
+        SetLogout: () => set(defualtUserState),
+        SetLogedIn: () => set((state) => ({ ...state, loggedIn: true })),
       }),
       {
         name: 'user-storage',

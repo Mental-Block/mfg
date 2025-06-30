@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/server/internal/adapters/api/v1/util"
 )
 
 type ResetPasswordRequest struct {
@@ -15,9 +14,7 @@ type ResetPasswordRequest struct {
 }
 
 type ResetPasswordResponse struct {
-	Body struct {
-		ok bool
-	}
+	Body bool
 }
 
 func (s *AuthHandler) ResetPassword(api huma.API) {
@@ -30,16 +27,26 @@ func (s *AuthHandler) ResetPassword(api huma.API) {
 		Method:        http.MethodPost,
 		DefaultStatus: http.StatusOK,
 	}, func(ctx context.Context, req *ResetPasswordRequest) (*ResetPasswordResponse, error) {
+
+		/* 
+			"http://localhost:8080/account/reset", 
+			"Do Not Reply - Reset Password", 
+			templates.ResetPasswordEmailTemplateMajicLink
+		*/
+
+
+
+
 	
-		err := s.authService.ResetPassword(ctx, req.Body.Email)
+		// err := s.authService.StartResetPasswordFlow(ctx, req.Body.Email)
 
-		if err != nil  {
-			return nil, util.HumaError(err)
-		}
+		// if err != nil  {
+		// 	return nil, util.HumaError(err)
+		// }
 
-		resp := &ResetPasswordResponse{}
-		resp.Body.ok = true
+		// resp := &ResetPasswordResponse{}
+		// resp.Body = true
 
-		return resp, nil
+		return nil, nil
 	})
 }

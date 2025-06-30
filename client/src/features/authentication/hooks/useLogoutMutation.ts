@@ -4,5 +4,6 @@ import { fetchLogout } from '../fetch';
 export const useLogoutMutation = () => {
   return useMutation({
     mutationFn: fetchLogout,
+    mutationKey: ['logout'],
   });
 };

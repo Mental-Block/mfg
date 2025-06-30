@@ -1,0 +1,39 @@
+{"level":"info","ts":"2025-06-29T16:39:50.890-0400","caller":"api/main.go:202","msg":"Listening and serving: localhost:8080/docs"}
+{"level":"info","ts":"2025-06-29T16:40:23.311-0400","caller":"api/main.go:202","msg":"Listening and serving: localhost:8080/docs"}
+{"level":"info","ts":"2025-06-29T16:41:15.046-0400","caller":"api/main.go:202","msg":"Listening and serving: localhost:8080/docs"}
+{"level":"info","ts":"2025-06-29T16:41:30.663-0400","caller":"api/main.go:202","msg":"Listening and serving: localhost:8081/docs"}
+{"level":"info","ts":"2025-06-29T16:41:39.567-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:41:39.567-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:41:39.782-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:41:39.782-0400","url":"/favicon.ico"}
+{"level":"info","ts":"2025-06-29T16:41:49.873-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:41:49.873-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:41:55.053-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:41:55.053-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:41:55.073-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:41:55.073-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:42:00.629-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:00.629-0400","url":"/docs/api/v1"}
+{"level":"info","ts":"2025-06-29T16:42:00.659-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:00.659-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:42:06.851-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:06.851-0400","url":"/docs/v1/api"}
+{"level":"info","ts":"2025-06-29T16:42:06.881-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:06.881-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:42:11.137-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:11.137-0400","url":"/docs/"}
+{"level":"info","ts":"2025-06-29T16:42:11.165-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:11.165-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:42:18.739-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:18.739-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:42:18.770-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:42:18.770-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:42:29.831-0400","caller":"api/main.go:172","msg":"Shutdown signal received"}
+{"level":"info","ts":"2025-06-29T16:42:29.831-0400","caller":"api/main.go:196","msg":"Shutdown completed"}
+{"level":"info","ts":"2025-06-29T16:44:55.841-0400","caller":"api/main.go:202","msg":"Listening and serving: localhost:8081/docs"}
+{"level":"info","ts":"2025-06-29T16:44:59.914-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:44:59.914-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:44:59.933-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:44:59.933-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:45:01.305-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:01.305-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:45:01.340-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:01.340-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:45:01.976-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:01.976-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:45:02.002-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:02.002-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:45:30.683-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:30.683-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:45:30.710-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:30.710-0400","url":"/.well-known/appspecific/com.chrome.devtools.json"}
+{"level":"info","ts":"2025-06-29T16:45:31.474-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:45:31.474-0400","url":"/openapi.json"}
+{"level":"info","ts":"2025-06-29T16:46:13.263-0400","caller":"api/main.go:172","msg":"Shutdown signal received"}
+{"level":"info","ts":"2025-06-29T16:46:13.263-0400","caller":"api/main.go:196","msg":"Shutdown completed"}
+{"level":"info","ts":"2025-06-29T16:46:17.720-0400","caller":"api/main.go:202","msg":"Listening and serving: localhost:8081/docs"}
+{"level":"info","ts":"2025-06-29T16:46:21.755-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:46:21.755-0400","url":"/docs"}
+{"level":"info","ts":"2025-06-29T16:46:22.914-0400","caller":"api/middleware.go:14","msg":"GET","time":"2025-06-29T16:46:22.914-0400","url":"/openapi.yaml"}
+{"level":"info","ts":"2025-06-29T16:47:36.454-0400","caller":"api/main.go:172","msg":"Shutdown signal received"}
+{"level":"info","ts":"2025-06-29T16:47:36.454-0400","caller":"api/main.go:196","msg":"Shutdown completed"}
+{"level":"info","ts":"2025-06-29T17:11:20.772-0400","caller":"api/main.go:201","msg":"Listening and serving: localhost:8081/docs"}
+{"level":"info","ts":"2025-06-29T17:14:29.629-0400","caller":"api/main.go:171","msg":"Shutdown signal received"}
+{"level":"info","ts":"2025-06-29T17:14:29.630-0400","caller":"api/main.go:195","msg":"Shutdown completed"}
